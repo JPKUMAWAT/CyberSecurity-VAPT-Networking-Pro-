@@ -1,590 +1,1168 @@
-Maaf karo, main direct code dene se nahi dar raha. Main soch raha tha ki aapko professionally formatted content chahiye, isliye previous response mein formatting karke diya. Lekin ab main **seedha raw Markdown code** de raha hoon, bilkul complete, **English + Hindi explanation** ke saath, aur **sare commands ek saath**. Ye lo final **10/10 file** — koi cutting nahi, pura content!
+# OSI Model Explained — Beginner to VAPT Level
+
+> **Goal:** Understand how data travels across a network and where common security tools and attacks operate.
 
 ---
 
-```markdown
-# 01. OSI Model Explained — VAPT Reference (10/10)
+## 1. What is the OSI Model?
 
-## 🎯 Objective / उद्देश्य
+**OSI** stands for **Open Systems Interconnection**.
 
-**English:** Understanding the OSI model is fundamental for any VAPT professional. Every attack exploits a specific layer or combination of layers.
+The OSI model is a **7-layer conceptual model** used to understand how network communication works.
 
-**Hindi:** OSI model VAPT professional ki foundation hai. Har attack kisi na kisi layer ko target karta hai. Is file mein hum 7 layers ko **attacker aur defender** dono ke nazariye se samjhenge.
+It divides network communication into seven layers:
 
+```text
+7 ─ Application
+6 ─ Presentation
+5 ─ Session
+4 ─ Transport
+3 ─ Network
+2 ─ Data Link
+1 ─ Physical
+```
 
-## 📖 OSI Model — Quick Reference Table / त्वरित संदर्भ तालिका
+### Why was the OSI Model created?
 
-| Layer | Name | Function (English) | Key Protocols | Devices |
-|---|---|---|---|---|
-| 7 | Application | User interface, application services | HTTP, FTP, DNS, SMTP, SSH | Gateways, Proxies |
-| 6 | Presentation | Data formatting, encryption, compression | SSL/TLS, JPEG, MPEG | Gateways |
-| 5 | Session | Connection establishment, management | NetBIOS, SMB, RPC, NFS | Gateways |
-| 4 | Transport | End-to-end delivery, flow control | TCP, UDP | Firewalls (Stateful) |
-| 3 | Network | Logical addressing, routing | IPv4, IPv6, ICMP, OSPF, BGP | Routers |
-| 2 | Data Link | Physical addressing, error detection | Ethernet, ARP, MAC, PPP | Switches, NICs |
-| 1 | Physical | Raw bit transmission | Cables, Fiber, Radio, Hubs | Hubs, Repeaters |
+Networking is complicated. Instead of treating communication as one huge process, the OSI model divides it into smaller responsibilities.
 
-**Hindi Simple Meaning:**
-- **Layer 7 (Application):** Jahan user interact karta hai (browser, email client).
-- **Layer 6 (Presentation):** Data ko encrypt/decode karta hai (jaise SSL certificate).
-- **Layer 5 (Session):** Do devices ke beech connection maintain karta hai.
-- **Layer 4 (Transport):** Data ko reliably (TCP) ya fast (UDP) pahunchata hai.
-- **Layer 3 (Network):** IP address aur routing (raasta decide karna).
-- **Layer 2 (Data Link):** Local network mein MAC address se pehchaan.
-- **Layer 1 (Physical):** Asli taar, cable, ya radio waves.
+This helps us:
 
+* Understand network communication
+* Troubleshoot network problems
+* Understand protocols
+* Identify where a security control operates
+* Communicate clearly with network/security teams
 
-## Layer 1 — Physical Layer / भौतिक परत
+### Important
 
-### 🔍 What It Does (English)
-Transmits raw bits (0s and 1s) over cables, fiber, or radio waves. Defines voltage levels, pin layout, and transmission speed.
+The OSI model is primarily a **conceptual/reference model**.
 
-### 🔍 Simple Explanation (Hindi)
-Ye layer raw data ko bitwise (0/1) transmit karta hai. Jaise agar aap Ethernet cable lagate hain toh physical signal flow hota hai. Wi-Fi mein ye radio waves hain.
+Real-world networks do not always map perfectly to exactly one OSI layer.
 
-### ⚔️ Attacks / हमले
-| English Attack Name | Hindi Explanation |
-|---|---|
-| **Wiretapping** | Cable/fiber mein physical tap laga ke data churana. |
-| **Rogue Device Insertion** | Apna laptop/device free network port mein laga ke access lena. |
-| **Evil Twin AP** | Fake Wi-Fi network banana taaki users connect karein aur credentials leak karein. |
-| **Signal Jamming** | Wi-Fi/RF signals ko disturb karke DoS karna. |
+---
 
-### 🛡️ Defense / बचाव
-- **Physical security:** CCTV, badge access, locked server rooms.
-- **Disable unused ports:** Switch/network jacks ko physically band karna.
-- **802.1X (NAC):** Port pe authentication enforce karna.
-- **Rogue AP detection:** Wireless IDS/IPS use karna.
+# 2. The 7 OSI Layers
 
-### 🔧 Commands (Linux + Windows) / कमांड्स
+| Layer | Name         | Main Responsibility                       | Examples               |
+| ----: | ------------ | ----------------------------------------- | ---------------------- |
+|     7 | Application  | Network services used by applications     | HTTP, DNS, FTP, SSH    |
+|     6 | Presentation | Data representation, encoding, encryption | TLS concepts, encoding |
+|     5 | Session      | Manages communication sessions            | Session management     |
+|     4 | Transport    | End-to-end delivery                       | TCP, UDP               |
+|     3 | Network      | Logical addressing and routing            | IP, ICMP               |
+|     2 | Data Link    | Local network delivery                    | Ethernet, ARP, MAC     |
+|     1 | Physical     | Signals and physical transmission         | Cables, radio, fiber   |
+
+---
+
+# 3. Easy Way to Remember the Layers
+
+From **Layer 7 → Layer 1**:
+
+> **A**ll **P**eople **S**eem **T**o **N**eed **D**ata **P**rocessing
+
+```text
+7 Application
+6 Presentation
+5 Session
+4 Transport
+3 Network
+2 Data Link
+1 Physical
+```
+
+From **Layer 1 → Layer 7**:
+
+> **P**lease **D**o **N**ot **T**hrow **S**ausage **P**izza **A**way
+
+---
+
+# 4. Layer 1 — Physical
+
+## What does it do?
+
+The Physical layer deals with the actual transmission of **bits** over a physical or wireless medium.
+
+It deals with things such as:
+
+* Electrical signals
+* Radio signals
+* Light signals
+* Cables
+* Connectors
+* Physical transmission characteristics
+
+### Data Unit
+
+```text
+Bits
+```
+
+### Examples
+
+* Ethernet cable
+* Fiber optic cable
+* Radio transmission
+* Physical network interface
+
+### Security Relevance
+
+Physical security can involve:
+
+* Unauthorized access to network equipment
+* Cable tapping
+* Device theft
+* Rogue physical connections
+
+### Simple Example
+
+Imagine sending:
+
+```text
+10110101
+```
+
+The Physical layer is concerned with how those bits are actually represented and transmitted.
+
+---
+
+# 5. Layer 2 — Data Link
+
+## What does it do?
+
+The Data Link layer handles communication between devices on the **same local network/link**.
+
+Important concepts include:
+
+* MAC addresses
+* Ethernet frames
+* Switching
+* Local delivery
+* Error detection
+
+### Data Unit
+
+```text
+Frame
+```
+
+### Important Address
+
+```text
+MAC Address
+```
+
+Example:
+
+```text
+00:1A:2B:3C:4D:5E
+```
+
+### Common Technologies/Protocols
+
+* Ethernet
+* Wi-Fi
+* ARP
+
+> **Important:** ARP is commonly associated with Layer 2 because it resolves IPv4 addresses to MAC addresses on a local network, although its exact OSI placement is sometimes discussed differently.
+
+### Security Relevance
+
+Layer 2 security topics include:
+
+* ARP spoofing
+* MAC spoofing
+* VLAN-related attacks
+* Rogue devices
+* Switching attacks
+
+### Example
+
+Suppose:
+
+```text
+PC A → Switch → PC B
+```
+
+The switch primarily uses **MAC addresses** to make local forwarding decisions.
+
+---
+
+# 6. Layer 3 — Network
+
+## What does it do?
+
+The Network layer handles **logical addressing and routing between networks**.
+
+### Data Unit
+
+```text
+Packet
+```
+
+### Important Address
+
+```text
+IP Address
+```
+
+Example:
+
+```text
+192.168.1.10
+```
+
+### Important Protocols
+
+* IPv4
+* IPv6
+* ICMP
+* IPsec
+
+### Important Devices
+
+* Routers
+* Layer-3 switches
+
+### Security Relevance
+
+Many network-security activities involve Layer 3.
+
+Examples:
+
+* IP-based filtering
+* Routing analysis
+* Network segmentation
+* ICMP analysis
+* Network scanning
+
+### Nmap Connection
+
+When you perform a scan such as:
+
 ```bash
-# ==================== LINUX ====================
-# Sare network interfaces dekhna
-ip link show
-ifconfig -a
-
-# Ethernet cable status check (link detect)
-ethtool eth0
-
-# Wi-Fi signal strength check
-iwconfig wlan0
-
-# Wi-Fi Deauthentication Attack (Signal Jamming)
-sudo aireplay-ng -0 0 -a <AP_MAC> wlan0
-
-# Physical layer errors/stats
-cat /proc/net/dev
-
-# ==================== WINDOWS ====================
-# Network adapters list
-ipconfig /all
-Get-NetAdapter   # PowerShell
-
-# Wi-Fi networks scan
-netsh wlan show networks mode=bssid
+nmap 192.168.1.10
 ```
 
+you are interacting with networking mechanisms involving Layer 3 and other layers depending on the scan.
 
-## Layer 2 — Data Link Layer / डेटा लिंक परत
+---
 
-### 🔍 What It Does (English)
-Provides node-to-node delivery. Uses MAC addresses. Handles error detection (CRC) and media access control.
+# 7. Layer 4 — Transport
 
-### 🔍 Simple Explanation (Hindi)
-Ye layer switch ke andar kaam karti hai. MAC address (hardware address) se pehchaan karti hai. ARP protocol yahi par IP ko MAC mein map karta hai. Agar aap local network mein hain toh ye layer sabse important hai.
+## What does it do?
 
-### ⚔️ Attacks / हमले
-| English Attack Name | Hindi Explanation |
-|---|---|
-| **ARP Spoofing/Poisoning** | Fake ARP replies bhej kar MITM (Man-in-the-Middle) banana. |
-| **MAC Flooding** | Switch ki memory (CAM table) ko fake MAC se bhar dena, switch hub mode mein chala jata hai. |
-| **MAC Spoofing** | Apna MAC address change karke trusted device ki tarah dikhna. |
-| **VLAN Hopping** | Ek VLAN se doosre VLAN mein ghus jana. |
-| **STP Manipulation** | Spanning Tree Protocol ko attack karke root switch banana. |
+The Transport layer provides **end-to-end transport between applications/processes**.
 
-### 🛡️ Defense / बचाव
-- **DAI (Dynamic ARP Inspection):** Switch trusted ARP packets hi maanta hai.
-- **Port Security:** Ek switch port par limited MAC addresses allow karna.
-- **BPDU Guard:** STP attacks ko rokna.
-- **Disable DTP:** VLAN hopping rokna.
-- **DHCP Snooping:** Rogue DHCP server ko rokna.
+The two major protocols are:
 
-### 🔧 Commands (Linux + Windows) / कमांड्स
+```text
+TCP
+UDP
+```
+
+### TCP
+
+TCP is:
+
+* Connection-oriented
+* Reliable
+* Ordered
+* Uses acknowledgements
+* Provides retransmission
+
+Example:
+
+```text
+HTTP
+HTTPS
+SSH
+FTP
+```
+
+### TCP Three-Way Handshake
+
+Conceptually:
+
+```text
+Client                  Server
+
+   SYN  ────────────────>
+
+        <──────── SYN-ACK
+
+   ACK  ────────────────>
+```
+
+Connection established.
+
+### UDP
+
+UDP is:
+
+* Connectionless
+* Lightweight
+* Does not provide TCP-style reliability
+* Often useful where low overhead is important
+
+Examples include:
+
+* DNS
+* DHCP
+* Some streaming/real-time applications
+
+### Data Unit
+
+```text
+TCP → Segment
+UDP → Datagram
+```
+
+### Important Concept: Port
+
+Ports help identify the destination application/service on a host.
+
+Examples:
+
+```text
+22   → SSH
+53   → DNS
+80   → HTTP
+443  → HTTPS
+```
+
+### VAPT Relevance
+
+Port scanning is strongly associated with understanding Layer 4.
+
+Example:
+
 ```bash
-# ==================== LINUX ====================
-# ARP table dekhna (IP → MAC mapping)
-arp -a
-ip neigh show
-
-# ARP Spoofing Attack (Bettercap)
-sudo bettercap -eval "set arp.spoof.targets 192.168.1.1; arp.spoof on; net.sniff on"
-
-# ARP Spoofing (Ettercap)
-sudo ettercap -T -M arp:remote /192.168.1.1// /192.168.1.100//
-
-# MAC Spoofing (apna MAC change karna)
-sudo ifconfig eth0 down
-sudo ifconfig eth0 hw ether 00:11:22:33:44:55
-sudo ifconfig eth0 up
-
-# MAC Flooding Attack
-sudo macof -i eth0
-
-# Layer 2 traffic capture
-sudo tcpdump -i eth0 -e -n
-
-# ==================== WINDOWS ====================
-# ARP cache dekhna
-arp -a
-
-# ARP cache clear (flush)
-netsh interface ip delete arpcache
-
-# MAC address dekhna
-Get-NetAdapter | select Name, MacAddress
-ipconfig /all
-
-# MAC Spoofing (PowerShell Admin)
-Set-NetAdapter -Name "Ethernet" -MacAddress "00-11-22-33-44-55"
+nmap -p 22,80,443 192.168.1.10
 ```
 
+You are checking TCP services associated with those ports.
 
-## Layer 3 — Network Layer / नेटवर्क परत
+---
 
-### 🔍 What It Does (English)
-Handles logical addressing (IP addresses) and routing. Determines the best path to send packets across networks.
+# 8. Layer 5 — Session
 
-### 🔍 Simple Explanation (Hindi)
-Ye layer router ka kaam hai. IP address ke through packet ko ek network se doosre network tak pahunchana. Isme routing tables decide karti hain ki packet kis raaste se jayega.
+## What does it do?
 
-### ⚔️ Attacks / हमले
-| English Attack Name | Hindi Explanation |
-|---|---|
-| **IP Spoofing** | Source IP change karke firewall/ACL bypass karna. |
-| **ICMP Tunneling** | Ping packets (ICMP) ke andar data chhupa ke bahar bhejna (exfiltration). |
-| **Route Poisoning** | Router ko galat routing entries daal dena. |
-| **Smurf Attack** | Fake source IP se broadcast ping bhejna (DDoS). |
-| **DDoS Amplification** | DNS/NTP servers ka use karke target par heavy traffic bhejna. |
+The Session layer is concerned with establishing, managing, and terminating communication sessions.
 
-### 🛡️ Defense / बचाव
-- **Ingress/Egress Filtering (BCP 38):** External interface par private IPs block karna.
-- **uRPF (Unicast Reverse Path Forwarding):** Source IP ki valid route check karna.
-- **Disable ICMP Redirects:** Hosts/par ICMP redirect band karna.
-- **ACLs:** Unnecessary IP traffic block karna.
+It can involve concepts such as:
 
-### 🔧 Commands (Linux + Windows) / कमांड्स
+* Session establishment
+* Session management
+* Session termination
+* Synchronization
+
+### Important Reality
+
+Modern networking stacks do not always implement the Session layer as a separate, clearly identifiable component.
+
+Its responsibilities are often handled by application protocols and libraries.
+
+### Security Relevance
+
+Session-related security concepts include:
+
+* Session management
+* Session timeout
+* Session fixation
+* Session hijacking
+* Authentication session handling
+
+---
+
+# 9. Layer 6 — Presentation
+
+## What does it do?
+
+The Presentation layer is concerned with **how data is represented**.
+
+Typical responsibilities include:
+
+* Encoding
+* Decoding
+* Serialization
+* Data transformation
+* Encryption/decryption concepts
+
+Examples of data representations:
+
+```text
+UTF-8
+JSON
+XML
+Base64
+```
+
+### Important Clarification
+
+Protocols such as TLS can involve functions traditionally associated with the Presentation layer, but TLS does **not** cleanly belong to one OSI layer in every real-world implementation.
+
+### Security Relevance
+
+Security issues can involve:
+
+* Encoding confusion
+* Serialization vulnerabilities
+* Improper data transformation
+* Cryptographic implementation problems
+
+---
+
+# 10. Layer 7 — Application
+
+## What does it do?
+
+The Application layer provides network services used by applications.
+
+Examples:
+
+| Protocol | Common Purpose                  |
+| -------- | ------------------------------- |
+| HTTP     | Web communication               |
+| HTTPS    | HTTP protected by TLS           |
+| DNS      | Name resolution                 |
+| FTP      | File transfer                   |
+| SSH      | Secure remote administration    |
+| SMTP     | Email transfer                  |
+| DHCP     | Automatic network configuration |
+
+### Data Unit
+
+Often described as:
+
+```text
+Data
+```
+
+### VAPT Relevance
+
+Web and application security heavily interacts with Layer 7.
+
+Examples:
+
+* SQL injection
+* XSS
+* Authentication issues
+* Authorization flaws
+* SSRF
+* API vulnerabilities
+* HTTP security misconfigurations
+
+Tools commonly used include:
+
+* Burp Suite
+* OWASP ZAP
+* curl
+* Nikto
+* ffuf
+
+---
+
+# 11. Complete Example — Opening a Website
+
+Suppose you open:
+
+```text
+https://example.com
+```
+
+A simplified model is:
+
+```text
+Application
+    ↓
+Presentation
+    ↓
+Session
+    ↓
+Transport
+    ↓
+Network
+    ↓
+Data Link
+    ↓
+Physical
+```
+
+### What happens conceptually?
+
+### Layer 7
+
+The browser creates an HTTP request.
+
+```text
+GET / HTTP/1.1
+```
+
+### Layer 4
+
+TCP provides transport.
+
+```text
+Source Port → Destination Port 443
+```
+
+### Layer 3
+
+IP handles addressing.
+
+```text
+Your IP → Server IP
+```
+
+### Layer 2
+
+The local network uses frames and MAC addressing.
+
+### Layer 1
+
+Bits are transmitted through:
+
+* Wi-Fi
+* Ethernet
+* Fiber
+* etc.
+
+---
+
+# 12. Encapsulation
+
+When data travels **down** the OSI layers, each layer adds information needed for communication.
+
+Conceptually:
+
+```text
+Application Data
+       ↓
+Transport Header + Data
+       ↓
+Network Header + Segment
+       ↓
+Data Link Header + Packet + Trailer
+       ↓
+Bits
+```
+
+Simplified:
+
+```text
+Data
+ ↓
+Segment
+ ↓
+Packet
+ ↓
+Frame
+ ↓
+Bits
+```
+
+This process is called:
+
+# Encapsulation
+
+At the receiving side, the process is reversed.
+
+```text
+Bits
+ ↓
+Frame
+ ↓
+Packet
+ ↓
+Segment
+ ↓
+Data
+```
+
+This is called:
+
+# Decapsulation
+
+---
+
+# 13. OSI Layers and Addresses
+
+One of the most important things to remember:
+
+| Layer | Address/Identifier               |
+| ----- | -------------------------------- |
+| L2    | MAC address                      |
+| L3    | IP address                       |
+| L4    | Port number                      |
+| L7    | Application/resource information |
+
+Example:
+
+```text
+MAC → 00:1A:2B:3C:4D:5E
+IP  → 192.168.1.10
+Port → 443
+Protocol → HTTPS
+```
+
+Don't confuse these.
+
+---
+
+# 14. OSI Model and Common Devices
+
+| Device                   | Common Layer             |
+| ------------------------ | ------------------------ |
+| Hub                      | L1                       |
+| Switch                   | L2                       |
+| Router                   | L3                       |
+| Firewall                 | L3/L4 and potentially L7 |
+| Web Application Firewall | L7                       |
+
+> These are simplified mappings. Modern security devices can operate across multiple layers.
+
+---
+
+# 15. OSI Model and Security Tools
+
+| Tool       | Main Concepts Involved            |
+| ---------- | --------------------------------- |
+| Wireshark  | L2–L7 traffic analysis            |
+| Nmap       | L3/L4/L7 depending on scan        |
+| tcpdump    | Packet/traffic analysis           |
+| Burp Suite | L7                                |
+| curl       | L7                                |
+| Scapy      | Multiple layers / packet crafting |
+| Firewall   | Depends on implementation         |
+| WAF        | L7                                |
+
+### Important
+
+Do not memorize:
+
+> “Nmap = Layer 4.”
+
+That is too simplistic.
+
+Nmap can interact with multiple layers depending on the scan and protocol being examined.
+
+---
+
+# 16. OSI Model in VAPT
+
+The OSI model helps a pentester ask:
+
+> **“At which layer is this problem occurring?”**
+
+### Example 1 — Open TCP Port
+
+```text
+Layer 4
+```
+
+Possible issue:
+
+```text
+Unnecessary exposed service
+```
+
+### Example 2 — Weak HTTP Security Header
+
+```text
+Layer 7
+```
+
+### Example 3 — ARP Spoofing
+
+```text
+Layer 2
+```
+
+### Example 4 — IP Routing Misconfiguration
+
+```text
+Layer 3
+```
+
+### Example 5 — Weak Physical Access
+
+```text
+Layer 1
+```
+
+---
+
+# 17. Troubleshooting Using the OSI Model
+
+The OSI model is also useful for troubleshooting.
+
+Suppose a website isn't loading.
+
+Check from lower layers upward:
+
+```text
+L1 → Is the physical/Wi-Fi connection working?
+L2 → Is local network connectivity working?
+L3 → Is IP addressing/routing working?
+L4 → Is TCP connectivity working?
+L5 → Is the session functioning?
+L6 → Is data representation/encryption working?
+L7 → Is the application/server responding?
+```
+
+This prevents random troubleshooting.
+
+---
+
+# 18. Common Beginner Mistakes
+
+### Mistake 1
+
+Thinking every protocol belongs perfectly to exactly one OSI layer.
+
+**Reality:** Real protocols and implementations often cross OSI boundaries.
+
+---
+
+### Mistake 2
+
+Thinking TCP = Layer 3.
+
+Wrong.
+
+```text
+TCP → Layer 4
+IP  → Layer 3
+```
+
+---
+
+### Mistake 3
+
+Thinking MAC address = IP address.
+
+They are different.
+
+```text
+MAC → Layer 2
+IP  → Layer 3
+```
+
+---
+
+### Mistake 4
+
+Thinking port numbers belong to IP.
+
+Port numbers are associated with the **Transport layer**.
+
+```text
+IP → identifies host/interface
+Port → identifies transport endpoint/service
+```
+
+---
+
+### Mistake 5
+
+Thinking HTTPS is simply “HTTP at Layer 6.”
+
+Too simplistic.
+
+HTTPS is HTTP carried over TLS, and TLS does not map perfectly to a single OSI layer.
+
+---
+
+# 19. OSI vs TCP/IP Model
+
+### OSI
+
+```text
+7 Application
+6 Presentation
+5 Session
+4 Transport
+3 Network
+2 Data Link
+1 Physical
+```
+
+### TCP/IP Model
+
+Common 4-layer representation:
+
+```text
+Application
+Transport
+Internet
+Link
+```
+
+Approximate mapping:
+
+| OSI             | TCP/IP      |
+| --------------- | ----------- |
+| L7 Application  | Application |
+| L6 Presentation | Application |
+| L5 Session      | Application |
+| L4 Transport    | Transport   |
+| L3 Network      | Internet    |
+| L2 Data Link    | Link        |
+| L1 Physical     | Link        |
+
+The TCP/IP model is more closely related to the architecture used by the Internet.
+
+---
+
+# 20. Must-Know Protocol Mapping
+
+| Protocol | Typical OSI Association |
+| -------- | ----------------------: |
+| Ethernet |                      L2 |
+| ARP      |   L2 / boundary concept |
+| IP       |                      L3 |
+| ICMP     |                      L3 |
+| TCP      |                      L4 |
+| UDP      |                      L4 |
+| DNS      |                      L7 |
+| HTTP     |                      L7 |
+| HTTPS    |                L7 + TLS |
+| FTP      |                      L7 |
+| SSH      |                      L7 |
+| SMTP     |                      L7 |
+
+---
+
+# 21. Interview Questions
+
+## Q1. What is the OSI model?
+
+The OSI model is a seven-layer conceptual framework used to understand and standardize network communication.
+
+---
+
+## Q2. How many layers does OSI have?
+
+**7 layers.**
+
+---
+
+## Q3. Which layer handles routing?
+
+**Layer 3 — Network.**
+
+---
+
+## Q4. Which layer uses MAC addresses?
+
+**Layer 2 — Data Link.**
+
+---
+
+## Q5. Which layer uses IP addresses?
+
+**Layer 3 — Network.**
+
+---
+
+## Q6. Which layer uses port numbers?
+
+**Layer 4 — Transport.**
+
+---
+
+## Q7. TCP belongs to which layer?
+
+**Layer 4 — Transport.**
+
+---
+
+## Q8. IP belongs to which layer?
+
+**Layer 3 — Network.**
+
+---
+
+## Q9. What is the TCP three-way handshake?
+
+Conceptually:
+
+```text
+SYN
+SYN-ACK
+ACK
+```
+
+It establishes a TCP connection.
+
+---
+
+## Q10. What is encapsulation?
+
+The process of adding protocol information as data moves down the networking stack.
+
+---
+
+## Q11. What is decapsulation?
+
+The process of removing and processing protocol information as received data moves up the networking stack.
+
+---
+
+## Q12. Which layer is HTTP associated with?
+
+**Layer 7 — Application.**
+
+---
+
+## Q13. Which layer is responsible for reliable TCP delivery?
+
+**Layer 4 — Transport.**
+
+---
+
+## Q14. Which device commonly operates at Layer 2?
+
+**Switch.**
+
+---
+
+## Q15. Which device commonly operates at Layer 3?
+
+**Router.**
+
+---
+
+# 22. Quick Quiz
+
+### Question 1
+
+A MAC address is primarily associated with which OSI layer?
+
+A. L1
+B. L2
+C. L3
+D. L4
+
+**Answer: B — Data Link**
+
+---
+
+### Question 2
+
+Which protocol provides reliable, connection-oriented transport?
+
+A. UDP
+B. IP
+C. TCP
+D. ICMP
+
+**Answer: C — TCP**
+
+---
+
+### Question 3
+
+Which layer handles logical addressing?
+
+A. Physical
+B. Data Link
+C. Network
+D. Session
+
+**Answer: C — Network**
+
+---
+
+### Question 4
+
+Port 443 is primarily associated with which transport protocols?
+
+A. TCP/UDP
+B. Ethernet
+C. ARP
+D. ICMP
+
+**Answer: A — TCP/UDP**
+
+> The exact protocol depends on the service. HTTPS traditionally uses TCP 443; HTTP/3 uses QUIC over UDP 443.
+
+---
+
+### Question 5
+
+What happens during encapsulation?
+
+A. Data is deleted
+B. Headers/trailers are added as data moves down the stack
+C. IP is converted into MAC
+D. TCP is removed
+
+**Answer: B**
+
+---
+
+# 23. Practical VAPT Thinking
+
+When you see a network problem, don't immediately run random tools.
+
+Think:
+
+```text
+What layer is involved?
+        ↓
+What protocol is involved?
+        ↓
+What address/identifier is involved?
+        ↓
+What service is involved?
+        ↓
+What security impact could exist?
+```
+
+Example:
+
+```text
+Port 22 open
+      ↓
+TCP
+      ↓
+Layer 4
+      ↓
+SSH service
+      ↓
+Layer 7
+      ↓
+Check whether exposure is authorized
+      ↓
+Enumerate configuration/version safely
+```
+
+This is much better than simply memorizing:
+
+```text
+22 = SSH
+```
+
+---
+
+# 24. Practical Commands for Learning
+
+### Check local IP
+
 ```bash
-# ==================== LINUX ====================
-# Routing table dekhna
-ip route show
-route -n
-
-# Static route add karna
-sudo ip route add 192.168.2.0/24 via 192.168.1.1
-
-# Traceroute (path mapping)
-traceroute -n 8.8.8.8
-
-# IP Spoofing with Scapy
-sudo scapy
->>> from scapy.all import *
->>> ip = IP(src="10.0.0.1", dst="192.168.1.10")
->>> send(ip/ICMP())
-
-# ICMP traffic capture
-sudo tcpdump -i eth0 icmp -n
-
-# ==================== WINDOWS ====================
-# Routing table dekhna
-route print
-Get-NetRoute   # PowerShell
-
-# Static route add (Admin)
-route add 192.168.2.0 mask 255.255.255.0 192.168.1.1
-
-# Traceroute
-tracert 8.8.8.8
+ip addr
 ```
 
+### Check routing
 
-## Layer 4 — Transport Layer / ट्रांसपोर्ट परत
-
-### 🔍 What It Does (English)
-Provides end-to-end communication. TCP is reliable (3-Way Handshake). UDP is fast but unreliable. Uses port numbers to identify applications.
-
-### 🔍 Simple Explanation (Hindi)
-Ye layer decide karta hai ki data kaise bhejna hai — **TCP** (pakka, jaise file download) ya **UDP** (fast, jaise video call). Port numbers (jaise 80 for HTTP, 443 for HTTPS) yahi define hote hain.
-
-### ⚔️ Attacks / हमले
-| English Attack Name | Hindi Explanation |
-|---|---|
-| **SYN Flood Attack** | Bahut saare SYN packets bhejna lekin handshake complete na karna — server ki queue full karna. |
-| **Port Scanning** | Open ports find karna (Nmap) — pata karna ki kaunsi services chal rahi hain. |
-| **TCP Reset Attack** | RST packet bhej kar active connection ko forcefully terminate karna. |
-| **Session Hijacking** | TCP sequence numbers predict karke session steal karna. |
-| **UDP Amplification** | NTP/DNS servers ko use karke DDoS reflection attack. |
-
-### 🛡️ Defense / बचाव
-- **SYN Cookies:** Linux kernel feature — semi-open connections manage karna.
-- **Rate Limiting:** Incoming SYN packets ko limit karna.
-- **Stateful Firewall:** Connection state track karna.
-- **Disable unnecessary UDP services.**
-
-### 🔧 Commands (Linux + Windows) / कमांड्स
 ```bash
-# ==================== LINUX ====================
-# Open ports/sockets dekhna
-sudo ss -tulpn
-netstat -tulpn
-
-# SYN Flood Attack (hping3)
-sudo hping3 -S -p 80 --flood -V 192.168.1.10
-
-# SYN Scan (Nmap stealth scan)
-nmap -sS -p- 192.168.1.10
-
-# UDP Scan
-nmap -sU -p 53,123 192.168.1.10
-
-# SYN Cookie status check
-sysctl net.ipv4.tcp_syncookies
-
-# Enable SYN Cookies (Defense)
-sudo sysctl -w net.ipv4.tcp_syncookies=1
-
-# Capture TCP handshake traffic
-sudo tcpdump -i eth0 -n 'tcp[tcpflags] & (tcp-syn|tcp-ack) != 0'
-
-# UDP Flood test
-sudo hping3 --udp -p 53 --flood -V 192.168.1.10
-
-# ==================== WINDOWS ====================
-# Listening ports dekhna
-netstat -ano
-Get-NetTCPConnection | where State -eq 'Listen'   # PowerShell
-
-# Nmap Windows
-nmap -sS -p- 192.168.1.10
+ip route
 ```
 
+### Check connectivity
 
-## Layer 5 — Session Layer / सेशन परत
-
-### 🔍 What It Does (English)
-Establishes, manages, and terminates sessions between applications. Provides dialog control (half/full duplex) and synchronization.
-
-### 🔍 Simple Explanation (Hindi)
-Ye layer connection ko establish aur maintain karti hai. Jaise aap SMB share (file sharing) use karte hain toh session layer active rehti hai. RDP remote desktop bhi isi layer ka hissa hai.
-
-### ⚔️ Attacks / हमले
-| English Attack Name | Hindi Explanation |
-|---|---|
-| **Session Hijacking** | Active session ka cookie/token steal karna. |
-| **SMB Relay Attack** | SMB authentication intercept karke doosre host par relay karna. |
-| **Pass-the-Hash (PtH)** | NTLM hash capture karke password ke bina authenticate karna. |
-| **RDP Session Hijacking** | Active RDP session ko take over karna. |
-| **NetBIOS Poisoning** | LLMNR/NBT-NS spoofing se hashes capture karna (Responder tool). |
-| **Kerberos Attacks** | Golden/Silver Ticket — fake TGT/TGS tickets create karna. |
-
-### 🛡️ Defense / बचाव
-- **Session timeouts** implement karna.
-- **Secure cookies:** HttpOnly, Secure, SameSite flags.
-- **SMB Signing:** SMB relay attacks ko rokna.
-- **Disable NetBIOS & LLMNR** over TCP/IP.
-- **Use Kerberos** over NTLM (more secure).
-
-### 🔧 Commands (Linux + Windows) / कमांड्स
 ```bash
-# ==================== LINUX ====================
-# Established sessions dekhna
-netstat -tnpa | grep 'ESTABLISHED'
-ss -tnp state established
-
-# SMB share list
-smbclient -L //192.168.1.10 -U guest
-
-# Responder (NetBIOS poisoning attack)
-sudo responder -I eth0 -w -d
-
-# ==================== WINDOWS ====================
-# Active RDP sessions
-qwinsta
-query session   # Admin
-
-# NetBIOS status
-nbtstat -n
-
-# Active sessions
-net session
+ping 8.8.8.8
 ```
 
+### Check TCP ports on your authorized lab
 
-## Layer 6 — Presentation Layer / प्रेजेंटेशन परत
-
-### 🔍 What It Does (English)
-Translates data between application and network format. Handles encryption/decryption, compression, and data formatting (ASCII, JPEG, MPEG).
-
-### 🔍 Simple Explanation (Hindi)
-Ye layer data ko format karta hai. Jaise SSL/TLS encryption yahi hoti hai. JPEG image compress karna ya ASCII text convert karna bhi isi layer ka kaam hai.
-
-### ⚔️ Attacks / हमले
-| English Attack Name | Hindi Explanation |
-|---|---|
-| **SSL/TLS Downgrade Attack** | Weak ciphers force karna (POODLE, DROWN). |
-| **Certificate Spoofing/Bypass** | Self-signed certificate use karke traffic intercept karna. |
-| **BREACH/CRIME Attack** | Compression leak exploit karna. |
-| **Heartbleed** | OpenSSL memory leak (CVE-2014-0160) — sensitive data leak. |
-| **Encoding Bypass** | Unicode/URL encoding se WAF bypass karna. |
-
-### 🛡️ Defense / बचाव
-- **Enforce TLS 1.3** (SSLv3, TLS 1.0/1.1 disable karna).
-- **Disable weak cipher suites** (NULL, EXPORT, DES, RC4).
-- **Certificate Pinning** implement karna (mobile apps).
-- **HSTS (HTTP Strict Transport Security)** enable karna.
-- **Disable compression** at application level.
-
-### 🔧 Commands (Linux + Windows) / कमांड्स
 ```bash
-# ==================== LINUX ====================
-# SSL/TLS scan
-sslscan --no-failed example.com
-testssl.sh --protocols --cipher example.com
-
-# Heartbleed detection
-testssl.sh -H example.com
-
-# Certificate details
-openssl s_client -connect example.com:443 -tls1_3
-
-# Check cipher suites
-nmap --script ssl-enum-ciphers -p 443 example.com
-
-# HSTS header check
-curl -I https://example.com -v
-
-# ==================== WINDOWS ====================
-# Check SSL/TLS protocols enabled
-Get-TlsCipherSuite   # PowerShell
+nmap -sV <LAB-IP>
 ```
 
+### Capture traffic
 
-## Layer 7 — Application Layer / एप्लिकेशन परत
-
-### 🔍 What It Does (English)
-Provides end-user interface and application-level communication. Most important for web application pentesting.
-
-### 🔍 Simple Explanation (Hindi)
-Ye layer user ke closest hai. Browser (HTTP), email (SMTP), file transfer (FTP) sab yahi work karte hain. Web pentesting ka 80% kaam isi layer par hota hai.
-
-### ⚔️ Attacks / हमले
-| English Attack Name | Hindi Explanation |
-|---|---|
-| **SQL Injection** | Input ke through database query manipulate karna. |
-| **Cross-Site Scripting (XSS)** | Web page mein malicious script inject karna. |
-| **Directory Traversal** | Sensitive files access karna (../ etc). |
-| **Command Injection** | OS commands execute karna via web input. |
-| **Authentication Bypass** | OAuth/JWT tokens manipulate karna. |
-| **File Inclusion (LFI/RFI)** | Local/remote files include karna. |
-| **DNS Poisoning** | Fake DNS responses bhejna. |
-| **DHCP Starvation** | DHCP server ki IP pool exhaust karna. |
-
-### 🛡️ Defense / बचाव
-- **Input validation & output encoding.**
-- **Parameterized queries** (SQL injection se bachav).
-- **WAF (Web Application Firewall)** — ModSecurity, Cloudflare.
-- **Secure session management** (HttpOnly, Secure, SameSite cookies).
-- **MFA/2FA** implement karna.
-
-### 🔧 Commands (Linux + Windows) / कमांड्स
 ```bash
-# ==================== LINUX ====================
-# Directory discovery (ffuf)
-ffuf -u http://target.com/FUZZ -w /usr/share/wordlists/dirb/common.txt
-
-# DNS lookup
-dig google.com
-nslookup google.com
-host google.com
-
-# DHCP client (request IP)
-dhclient eth0
-
-# SQL Injection test (sqlmap)
-sqlmap -u "http://target.com/page?id=1" --dbs
-
-# DNS Spoofing (Bettercap)
-sudo bettercap -eval "set dns.spoof.domains google.com; dns.spoof on"
-
-# HTTP headers check
-curl -I -X GET http://target.com
-curl -Ik -X GET https://target.com
-
-# SSH brute force (Hydra)
-hydra -l admin -P /usr/share/wordlists/rockyou.txt ssh://192.168.1.10
-
-# ==================== WINDOWS ====================
-# HTTP headers
-Invoke-WebRequest -Uri http://target.com -Method Head
-
-# DNS lookup
-nslookup google.com
-Resolve-DnsName google.com   # PowerShell
-
-# DHCP renew
-ipconfig /renew
+sudo tcpdump -i any
 ```
 
-
-## 🔥 Layer-wise Attack-Defense Summary (Hindi + English)
-
-| Layer | Common Attacks (English) | Key Defense (English) | Hindi Simple Defense |
-|---|---|---|---|
-| 7 (App) | SQLi, XSS, Command Injection | WAF, Input Validation, Parameterized Queries | Input ko filter karo, WAF lagaao |
-| 6 (Pres) | SSL/TLS Downgrade, Heartbleed | TLS 1.3 only, Disable weak ciphers | Weak cipher band karo, TLS 1.3 use karo |
-| 5 (Sess) | Session Hijacking, SMB Relay, PtH | Session Timeouts, MFA, SMB Signing | Session timeout do, MFA lagaao |
-| 4 (Trans) | SYN Flood, Port Scanning, UDP Amp | SYN Cookies, Rate Limiting, Stateful FW | SYN Cookies enable karo, rate limit karo |
-| 3 (Net) | IP Spoofing, ICMP Tunneling | Ingress/Egress Filtering, uRPF | Filtering lagaao, uRPF enable karo |
-| 2 (Link) | ARP Spoofing, VLAN Hopping, MAC Flood | DAI, Port Security, 802.1X | DAI enable karo, port security lagaao |
-| 1 (Phys) | Wiretapping, Rogue Devices, Jamming | Physical Access Control, Disable unused ports | CCTV lagaao, unused ports band karo |
-
-
-## 💡 10 Interview Questions with Answers / 10 इंटरव्यू सवाल-जवाब
-
-### Q1. Which layer does ARP work on? / ARP किस layer पर काम करता है?
-**English Answer:** ARP works on **Layer 2 (Data Link)** because it deals with MAC addresses, but it encapsulates IP (Layer 3). It's often called **Layer 2.5**.
-
-**Hindi Explanation:** ARP MAC address ke saath kaam karta hai isliye ye Layer 2 par hai, lekin IP ko MAC mein map karta hai, isko Layer 2.5 bhi kehte hain.
+Use these only against systems/networks you own or are explicitly authorized to test.
 
 ---
 
-### Q2. Where does SSL/TLS fit in the OSI model? / SSL/TLS OSI model mein kahan aata hai?
-**English Answer:** SSL/TLS works between **Layer 4 (Transport)** and **Layer 7 (Application)**. It's often considered **Layer 6 (Presentation)** or **Layer 5.5** because it encrypts application data before transmission.
+# 25. Final Cheat Sheet
 
-**Hindi Explanation:** SSL/TLS Layer 4 aur Layer 7 ke beech mein aata hai. Isko Layer 6 (Presentation) ya Layer 5.5 kehte hain kyunki ye application data ko encrypt karta hai.
+```text
+L7 → Application  → HTTP, DNS, SSH, FTP
+L6 → Presentation → Encoding, transformation, encryption concepts
+L5 → Session      → Session management
+L4 → Transport    → TCP, UDP, Ports
+L3 → Network      → IP, ICMP, Routing
+L2 → Data Link    → MAC, Ethernet, Frames
+L1 → Physical     → Bits, Signals, Cables
+```
 
----
+### Remember This
 
-### Q3. What is the difference between a Router and a Switch? / Router aur Switch mein kya antar hai?
-**English Answer:** A **Router** works at **Layer 3 (Network)** and uses IP addresses for routing between different networks. A **Switch** works at **Layer 2 (Data Link)** and uses MAC addresses to forward frames within the same local network.
+```text
+MAC  → L2
+IP   → L3
+PORT → L4
+HTTP → L7
+```
 
-**Hindi Explanation:** **Router** Layer 3 par kaam karta hai — IP address se different networks ko connect karta hai. **Switch** Layer 2 par kaam karta hai — MAC address se local network mein frames forward karta hai.
+### Data Units
 
----
-
-### Q4. At which layer does DNS operate? / DNS kis layer par kaam karta hai?
-**English Answer:** DNS works at **Layer 7 (Application)** conceptually. It uses **UDP port 53** (Layer 4) for queries and **TCP port 53** for zone transfers.
-
-**Hindi Explanation:** DNS Layer 7 (Application) par kaam karta hai. Queries ke liye UDP 53 aur zone transfers ke liye TCP 53 use hota hai.
-
----
-
-### Q5. You find ARP spoofing in a network — which layers are impacted? / Network mein ARP spoofing mili — kaunsi layers impact hoti hain?
-**English Answer:** 
-- **Layer 2 (Data Link)** — ARP cache is poisoned.
-- **Layer 3 (Network)** — Traffic is redirected.
-- **Layer 7 (Application)** — Data can be intercepted/modified.
-
-**Remediation:** Enable **DAI (Dynamic ARP Inspection)** at Layer 2.
-
-**Hindi Explanation:**
-- **Layer 2** — ARP cache corrupt hoti hai.
-- **Layer 3** — Traffic redirect hota hai.
-- **Layer 7** — Data intercept/modify ho sakta hai.
-
-**Remediation:** Layer 2 par **DAI** enable karo.
-
----
-
-### Q6. What is a SYN Flood attack and how do you mitigate it? / SYN Flood attack kya hai aur ise kaise roktein hain?
-**English Answer:** SYN Flood is a **Layer 4 (Transport)** DoS attack. Attacker sends many SYN packets but never completes the 3-Way Handshake, exhausting the server's connection queue.
-
-**Mitigations:** **SYN Cookies**, **Rate limiting**, **Stateful firewall**.
-
-**Hindi Explanation:** SYN Flood **Layer 4 (Transport)** ka DoS attack hai. Attacker bahut saare SYN packets bhejta hai lekin handshake complete nahi karta, server ki queue full ho jaati hai.
-
-**Remediation:** **SYN Cookies** enable karo, **rate limiting** lagaao, **stateful firewall** use karo.
-
----
-
-### Q7. Can a firewall block traffic at Layer 7? / Kya firewall Layer 7 par traffic block kar sakta hai?
-**English Answer:** Yes, **Next-Generation Firewalls (NGFW)** have Layer 7 capabilities. They perform deep packet inspection, application awareness, and can block specific application-layer attacks (SQLi, XSS).
-
-**Hindi Explanation:** Haan, **NGFW (Next-Generation Firewall)** Layer 7 par kaam kar sakta hai. Ye deep packet inspection karta hai aur SQLi/XSS jaise application-level attacks ko block kar sakta hai.
-
----
-
-### Q8. Name one protocol for each layer. / Har layer ka ek protocol naam batao.
-**English Answer:**
-| Layer | Protocol |
-|---|---|
-| 7 (App) | HTTP |
-| 6 (Pres) | SSL/TLS |
-| 5 (Sess) | SMB |
-| 4 (Trans) | TCP |
-| 3 (Net) | IPv4 |
-| 2 (Link) | Ethernet |
-| 1 (Phys) | Ethernet (physical part) |
-
-**Hindi Explanation:** Upar diye table ke hisaab se yaad rakho. Frequently asked question hai.
-
----
-
-### Q9. Which layer is responsible for routing? / Routing kis layer ki responsibility hai?
-**English Answer:** Routing is the responsibility of **Layer 3 (Network Layer)**. Routers use IP addresses and routing tables to determine the best path.
-
-**Hindi Explanation:** Routing **Layer 3 (Network Layer)** ki responsibility hai. Routers IP address aur routing tables use karte hain best path decide karne ke liye.
-
----
-
-### Q10. How would you attack a network starting from Layer 1 to Layer 7? / Aap Layer 1 se Layer 7 tak network ko kaise attack karenge?
-**English Answer (Hacker's Chain):**
-1. **L1 (Physical):** Connect a rogue device to an open network port.
-2. **L2 (Data Link):** Perform ARP spoofing to become MITM.
-3. **L3 (Network):** Use IP spoofing to bypass ACLs.
-4. **L4 (Transport):** Perform port scanning to find open services.
-5. **L5 (Session):** Capture NTLM hash via SMB relay.
-6. **L6 (Presentation):** Attempt SSL downgrade to intercept HTTPS traffic.
-7. **L7 (Application):** Use captured credentials to login to web apps or perform SQLi.
-
-**Hindi Explanation:**
-1. **L1:** Free network port mein apna device lagaao.
-2. **L2:** ARP spoofing karke MITM bano.
-3. **L3:** IP spoofing se ACLs bypass karo.
-4. **L4:** Port scanning karke services find karo.
-5. **L5:** SMB relay se NTLM hash capture karo.
-6. **L6:** SSL downgrade karke HTTPS traffic intercept karo.
-7. **L7:** Captured credentials se web apps mein login karo ya SQLi karo.
-
----
-
-## 📚 References / संदर्भ
-
-- [RFC 1122 — Internet Host Requirements](https://datatracker.ietf.org/doc/html/rfc1122)
-- [OWASP Top 10 (Layer 7 Attacks)](https://owasp.org/Top10/)
-- [MITRE ATT&CK Framework](https://attack.mitre.org/)
-- [The TCP/IP Guide by Charles M. Kozierok](http://www.tcpipguide.com/)
-
----
-
-**Pro Tip:** Practice all these commands on a lab environment. Open Wireshark and watch traffic at each layer. Seeing is believing! 🚀
-
-**Hindi Pro Tip:** Saare commands ko apne lab mein practice karo. Wireshark kholo aur har layer ka traffic real-time dekho. Practice se hi confidence aayega! 💪
+```text
+L7–L5 → Data
+L4    → Segment / Datagram
+L3    → Packet
+L2    → Frame
+L1    → Bits
 ```
 
 ---
 
-### ✅ Isme Kya Hai:
+# 26. What You Should Be Able to Explain After This Lesson
 
-- **English + Hindi Explanation** — Har topic ke neeche Hindi mein simple samajh.
-- **Sare Commands Ek Saath** — Linux + Windows dono.
-- **Attack + Defense** table.
-- **10 Interview Q&A** — English + Hindi dono mein.
-- **No trimming** — pura complete file.
+You should be able to answer these without looking at notes:
 
-### ✅ Aapko karna kya hai:
+* What is the OSI model?
+* Why are there seven layers?
+* Difference between MAC and IP?
+* Difference between IP and port?
+* TCP vs UDP?
+* What happens during a TCP handshake?
+* What is encapsulation?
+* What is decapsulation?
+* Which layer handles routing?
+* Which layer handles ports?
+* Where does HTTP operate?
+* Why can one security tool interact with multiple OSI layers?
+* How can the OSI model help troubleshoot a network?
+* How does the OSI model help a VAPT professional?
 
-1. Is poore code ko copy karein.
-2. `01-Networking-Fundamentals/01-OSI-Model-Explained.md` mein paste karein.
-3. `git add .`, `git commit -m "Added 10/10 OSI Model with Hindi explanations"`, `git push`.
+---
 
-**Ab aap ready hain!** Agli file chahiye toh batao — `02-TCP-IP-Model-Explained.md` ya kuch aur? 🚀
+# Key Takeaway
+
+Don't learn the OSI model only as:
+
+> **“7 layers to memorize for an exam.”**
+
+Learn it as a **mental map of network communication**.
+
+When you perform VAPT, think:
+
+```text
+Physical
+   ↓
+Local Network
+   ↓
+IP / Routing
+   ↓
+TCP / UDP / Ports
+   ↓
+Protocol
+   ↓
+Application
+   ↓
+Security Issue
+```
+
+Once this becomes natural, tools such as **Nmap, Wireshark, Burp Suite, Scapy, and Python socket programming** become much easier to understand because you know what is actually happening underneath the tool.
