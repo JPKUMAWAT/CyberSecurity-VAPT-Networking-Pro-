@@ -1,894 +1,181 @@
-# OSI Model Explained — Beginner to VAPT Level
+Haan. Maine tumhare actual GitHub folder ko check kiya — `01-Networking-Fundamentals` me currently ye 4 files hain: **OSI Model, TCP/IP Model, Data Encapsulation, Common Ports & Services**. ([GitHub][1])
 
-> **Goal:** Understand how data travels across a network and where common security tools and attacks operate.
+Neeche main inhe **beginner → intermediate → VAPT → interview** level par upgrade kar raha hoon. Language simple rakhi hai, lekin technical concepts accurate hain.
 
 ---
 
+# OSI Model Explained
+
 ## 1. What is the OSI Model?
 
-**OSI** stands for **Open Systems Interconnection**.
+OSI stands for **Open Systems Interconnection**.
 
-The OSI model is a **7-layer conceptual model** used to understand how network communication works.
+It is a 7-layer conceptual model used to understand how data moves between two devices over a network.
 
-It divides network communication into seven layers:
+The OSI model does NOT mean that every real-world network literally operates using seven separate layers. It is mainly a learning, troubleshooting, and communication model.
 
-```text
-7 ─ Application
-6 ─ Presentation
-5 ─ Session
-4 ─ Transport
-3 ─ Network
-2 ─ Data Link
-1 ─ Physical
-```
+### Why is OSI important for cybersecurity?
 
-### Why was the OSI Model created?
+A pentester needs to understand where a technology operates.
 
-Networking is complicated. Instead of treating communication as one huge process, the OSI model divides it into smaller responsibilities.
+For example:
 
-This helps us:
+- MAC address → Layer 2
+- IP address → Layer 3
+- TCP/UDP → Layer 4
+- HTTP/SSH/DNS → Layer 7
 
-* Understand network communication
-* Troubleshoot network problems
-* Understand protocols
-* Identify where a security control operates
-* Communicate clearly with network/security teams
-
-### Important
-
-The OSI model is primarily a **conceptual/reference model**.
-
-Real-world networks do not always map perfectly to exactly one OSI layer.
+Understanding the layer helps you understand the attack surface.
 
 ---
 
 # 2. The 7 OSI Layers
 
-| Layer | Name         | Main Responsibility                       | Examples               |
-| ----: | ------------ | ----------------------------------------- | ---------------------- |
-|     7 | Application  | Network services used by applications     | HTTP, DNS, FTP, SSH    |
-|     6 | Presentation | Data representation, encoding, encryption | TLS concepts, encoding |
-|     5 | Session      | Manages communication sessions            | Session management     |
-|     4 | Transport    | End-to-end delivery                       | TCP, UDP               |
-|     3 | Network      | Logical addressing and routing            | IP, ICMP               |
-|     2 | Data Link    | Local network delivery                    | Ethernet, ARP, MAC     |
-|     1 | Physical     | Signals and physical transmission         | Cables, radio, fiber   |
+Remember:
+
+> **Please Do Not Throw Sausage Pizza Away**
+
+| Layer | Name | Main Responsibility | Examples |
+|---|---|---|---|
+| 7 | Application | Network services used by applications | HTTP, DNS, SSH |
+| 6 | Presentation | Data representation/translation | Encoding, encryption concepts |
+| 5 | Session | Session establishment/management | Sessions, RPC concepts |
+| 4 | Transport | End-to-end delivery | TCP, UDP |
+| 3 | Network | Logical addressing/routing | IPv4, IPv6, routers |
+| 2 | Data Link | Frames, MAC addressing | Ethernet, switches |
+| 1 | Physical | Electrical/radio/physical signals | Cable, fiber, Wi-Fi radio |
 
 ---
 
-# 3. Easy Way to Remember the Layers
+# 3. Layer 1 — Physical
 
-From **Layer 7 → Layer 1**:
+## Definition
 
-> **A**ll **P**eople **S**eem **T**o **N**eed **D**ata **P**rocessing
+The Physical layer deals with the transmission of raw bits over a physical medium.
 
-```text
-7 Application
-6 Presentation
-5 Session
-4 Transport
-3 Network
-2 Data Link
-1 Physical
-```
+Examples:
 
-From **Layer 1 → Layer 7**:
+- Ethernet cable
+- Fiber
+- Radio signals
+- Wi-Fi physical transmission
 
-> **P**lease **D**o **N**ot **T**hrow **S**ausage **P**izza **A**way
+Data unit:
 
----
-
-# 4. Layer 1 — Physical
-
-## What does it do?
-
-The Physical layer deals with the actual transmission of **bits** over a physical or wireless medium.
-
-It deals with things such as:
-
-* Electrical signals
-* Radio signals
-* Light signals
-* Cables
-* Connectors
-* Physical transmission characteristics
-
-### Data Unit
-
-```text
-Bits
-```
-
-### Examples
-
-* Ethernet cable
-* Fiber optic cable
-* Radio transmission
-* Physical network interface
-
-### Security Relevance
-
-Physical security can involve:
-
-* Unauthorized access to network equipment
-* Cable tapping
-* Device theft
-* Rogue physical connections
-
-### Simple Example
-
-Imagine sending:
-
-```text
-10110101
-```
-
-The Physical layer is concerned with how those bits are actually represented and transmitted.
-
----
-
-# 5. Layer 2 — Data Link
-
-## What does it do?
-
-The Data Link layer handles communication between devices on the **same local network/link**.
-
-Important concepts include:
-
-* MAC addresses
-* Ethernet frames
-* Switching
-* Local delivery
-* Error detection
-
-### Data Unit
-
-```text
-Frame
-```
-
-### Important Address
-
-```text
-MAC Address
-```
-
-Example:
-
-```text
-00:1A:2B:3C:4D:5E
-```
-
-### Common Technologies/Protocols
-
-* Ethernet
-* Wi-Fi
-* ARP
-
-> **Important:** ARP is commonly associated with Layer 2 because it resolves IPv4 addresses to MAC addresses on a local network, although its exact OSI placement is sometimes discussed differently.
-
-### Security Relevance
-
-Layer 2 security topics include:
-
-* ARP spoofing
-* MAC spoofing
-* VLAN-related attacks
-* Rogue devices
-* Switching attacks
+> Bits
 
 ### Example
 
-Suppose:
+A computer sends electrical/light/radio signals representing:
 
 ```text
-PC A → Switch → PC B
-```
+101101001010...
 
-The switch primarily uses **MAC addresses** to make local forwarding decisions.
+### VAPT relevance
+
+Physical security is different from normal network pentesting.
+
+Examples:
+
+* Unauthorized physical access
+* Rogue devices
+* Network cable exposure
 
 ---
 
-# 6. Layer 3 — Network
+# 4. Layer 2 — Data Link
 
-## What does it do?
+Layer 2 handles communication within the local network.
 
-The Network layer handles **logical addressing and routing between networks**.
+Important concepts:
 
-### Data Unit
+* MAC address
+* Ethernet frames
+* Switches
+* ARP-related local network operation
 
-```text
-Packet
-```
+Data unit:
 
-### Important Address
-
-```text
-IP Address
-```
+> Frame
 
 Example:
 
 ```text
-192.168.1.10
+Source MAC → Destination MAC
 ```
 
-### Important Protocols
+### Device
+
+Switches primarily operate at Layer 2.
+
+### Security relevance
+
+Important concepts:
+
+* MAC address
+* ARP
+* VLANs
+* Switch configuration
+* Network segmentation
+
+---
+
+# 5. Layer 3 — Network
+
+Layer 3 handles logical addressing and routing between networks.
+
+Important protocols:
 
 * IPv4
 * IPv6
 * ICMP
-* IPsec
 
-### Important Devices
+Data unit:
 
-* Routers
-* Layer-3 switches
+> Packet
 
-### Security Relevance
+Example:
 
-Many network-security activities involve Layer 3.
+```text
+192.168.1.10 → 8.8.8.8
+```
 
-Examples:
+Routers operate primarily at Layer 3.
 
-* IP-based filtering
+### VAPT relevance
+
+This layer is extremely important for:
+
+* Network discovery
 * Routing analysis
 * Network segmentation
-* ICMP analysis
-* Network scanning
+* IP exposure
+* Firewall rules
+* Attack-surface mapping
 
-### Nmap Connection
-
-When you perform a scan such as:
-
-```bash
-nmap 192.168.1.10
-```
-
-you are interacting with networking mechanisms involving Layer 3 and other layers depending on the scan.
-
----
-
-# 7. Layer 4 — Transport
-
-## What does it do?
-
-The Transport layer provides **end-to-end transport between applications/processes**.
-
-The two major protocols are:
-
-```text
-TCP
-UDP
-```
-
-### TCP
-
-TCP is:
-
-* Connection-oriented
-* Reliable
-* Ordered
-* Uses acknowledgements
-* Provides retransmission
-
-Example:
-
-```text
-HTTP
-HTTPS
-SSH
-FTP
-```
-
-### TCP Three-Way Handshake
-
-Conceptually:
-
-```text
-Client                  Server
-
-   SYN  ────────────────>
-
-        <──────── SYN-ACK
-
-   ACK  ────────────────>
-```
-
-Connection established.
-
-### UDP
-
-UDP is:
-
-* Connectionless
-* Lightweight
-* Does not provide TCP-style reliability
-* Often useful where low overhead is important
-
-Examples include:
-
-* DNS
-* DHCP
-* Some streaming/real-time applications
-
-### Data Unit
-
-```text
-TCP → Segment
-UDP → Datagram
-```
-
-### Important Concept: Port
-
-Ports help identify the destination application/service on a host.
-
-Examples:
-
-```text
-22   → SSH
-53   → DNS
-80   → HTTP
-443  → HTTPS
-```
-
-### VAPT Relevance
-
-Port scanning is strongly associated with understanding Layer 4.
-
-Example:
+Useful Kali commands:
 
 ```bash
-nmap -p 22,80,443 192.168.1.10
+ip addr
+ip route
+ping 192.168.1.1
 ```
 
-You are checking TCP services associated with those ports.
+Use only on systems/networks you are authorized to test.
 
 ---
 
-# 8. Layer 5 — Session
+# 6. Layer 4 — Transport
 
-## What does it do?
+Layer 4 provides end-to-end transport between applications.
 
-The Session layer is concerned with establishing, managing, and terminating communication sessions.
+Main protocols:
 
-It can involve concepts such as:
+## TCP
 
-* Session establishment
-* Session management
-* Session termination
-* Synchronization
+Connection-oriented and reliable.
 
-### Important Reality
-
-Modern networking stacks do not always implement the Session layer as a separate, clearly identifiable component.
-
-Its responsibilities are often handled by application protocols and libraries.
-
-### Security Relevance
-
-Session-related security concepts include:
-
-* Session management
-* Session timeout
-* Session fixation
-* Session hijacking
-* Authentication session handling
-
----
-
-# 9. Layer 6 — Presentation
-
-## What does it do?
-
-The Presentation layer is concerned with **how data is represented**.
-
-Typical responsibilities include:
-
-* Encoding
-* Decoding
-* Serialization
-* Data transformation
-* Encryption/decryption concepts
-
-Examples of data representations:
-
-```text
-UTF-8
-JSON
-XML
-Base64
-```
-
-### Important Clarification
-
-Protocols such as TLS can involve functions traditionally associated with the Presentation layer, but TLS does **not** cleanly belong to one OSI layer in every real-world implementation.
-
-### Security Relevance
-
-Security issues can involve:
-
-* Encoding confusion
-* Serialization vulnerabilities
-* Improper data transformation
-* Cryptographic implementation problems
-
----
-
-# 10. Layer 7 — Application
-
-## What does it do?
-
-The Application layer provides network services used by applications.
-
-Examples:
-
-| Protocol | Common Purpose                  |
-| -------- | ------------------------------- |
-| HTTP     | Web communication               |
-| HTTPS    | HTTP protected by TLS           |
-| DNS      | Name resolution                 |
-| FTP      | File transfer                   |
-| SSH      | Secure remote administration    |
-| SMTP     | Email transfer                  |
-| DHCP     | Automatic network configuration |
-
-### Data Unit
-
-Often described as:
-
-```text
-Data
-```
-
-### VAPT Relevance
-
-Web and application security heavily interacts with Layer 7.
-
-Examples:
-
-* SQL injection
-* XSS
-* Authentication issues
-* Authorization flaws
-* SSRF
-* API vulnerabilities
-* HTTP security misconfigurations
-
-Tools commonly used include:
-
-* Burp Suite
-* OWASP ZAP
-* curl
-* Nikto
-* ffuf
-
----
-
-# 11. Complete Example — Opening a Website
-
-Suppose you open:
-
-```text
-https://example.com
-```
-
-A simplified model is:
-
-```text
-Application
-    ↓
-Presentation
-    ↓
-Session
-    ↓
-Transport
-    ↓
-Network
-    ↓
-Data Link
-    ↓
-Physical
-```
-
-### What happens conceptually?
-
-### Layer 7
-
-The browser creates an HTTP request.
-
-```text
-GET / HTTP/1.1
-```
-
-### Layer 4
-
-TCP provides transport.
-
-```text
-Source Port → Destination Port 443
-```
-
-### Layer 3
-
-IP handles addressing.
-
-```text
-Your IP → Server IP
-```
-
-### Layer 2
-
-The local network uses frames and MAC addressing.
-
-### Layer 1
-
-Bits are transmitted through:
-
-* Wi-Fi
-* Ethernet
-* Fiber
-* etc.
-
----
-
-# 12. Encapsulation
-
-When data travels **down** the OSI layers, each layer adds information needed for communication.
-
-Conceptually:
-
-```text
-Application Data
-       ↓
-Transport Header + Data
-       ↓
-Network Header + Segment
-       ↓
-Data Link Header + Packet + Trailer
-       ↓
-Bits
-```
-
-Simplified:
-
-```text
-Data
- ↓
-Segment
- ↓
-Packet
- ↓
-Frame
- ↓
-Bits
-```
-
-This process is called:
-
-# Encapsulation
-
-At the receiving side, the process is reversed.
-
-```text
-Bits
- ↓
-Frame
- ↓
-Packet
- ↓
-Segment
- ↓
-Data
-```
-
-This is called:
-
-# Decapsulation
-
----
-
-# 13. OSI Layers and Addresses
-
-One of the most important things to remember:
-
-| Layer | Address/Identifier               |
-| ----- | -------------------------------- |
-| L2    | MAC address                      |
-| L3    | IP address                       |
-| L4    | Port number                      |
-| L7    | Application/resource information |
-
-Example:
-
-```text
-MAC → 00:1A:2B:3C:4D:5E
-IP  → 192.168.1.10
-Port → 443
-Protocol → HTTPS
-```
-
-Don't confuse these.
-
----
-
-# 14. OSI Model and Common Devices
-
-| Device                   | Common Layer             |
-| ------------------------ | ------------------------ |
-| Hub                      | L1                       |
-| Switch                   | L2                       |
-| Router                   | L3                       |
-| Firewall                 | L3/L4 and potentially L7 |
-| Web Application Firewall | L7                       |
-
-> These are simplified mappings. Modern security devices can operate across multiple layers.
-
----
-
-# 15. OSI Model and Security Tools
-
-| Tool       | Main Concepts Involved            |
-| ---------- | --------------------------------- |
-| Wireshark  | L2–L7 traffic analysis            |
-| Nmap       | L3/L4/L7 depending on scan        |
-| tcpdump    | Packet/traffic analysis           |
-| Burp Suite | L7                                |
-| curl       | L7                                |
-| Scapy      | Multiple layers / packet crafting |
-| Firewall   | Depends on implementation         |
-| WAF        | L7                                |
-
-### Important
-
-Do not memorize:
-
-> “Nmap = Layer 4.”
-
-That is too simplistic.
-
-Nmap can interact with multiple layers depending on the scan and protocol being examined.
-
----
-
-# 16. OSI Model in VAPT
-
-The OSI model helps a pentester ask:
-
-> **“At which layer is this problem occurring?”**
-
-### Example 1 — Open TCP Port
-
-```text
-Layer 4
-```
-
-Possible issue:
-
-```text
-Unnecessary exposed service
-```
-
-### Example 2 — Weak HTTP Security Header
-
-```text
-Layer 7
-```
-
-### Example 3 — ARP Spoofing
-
-```text
-Layer 2
-```
-
-### Example 4 — IP Routing Misconfiguration
-
-```text
-Layer 3
-```
-
-### Example 5 — Weak Physical Access
-
-```text
-Layer 1
-```
-
----
-
-# 17. Troubleshooting Using the OSI Model
-
-The OSI model is also useful for troubleshooting.
-
-Suppose a website isn't loading.
-
-Check from lower layers upward:
-
-```text
-L1 → Is the physical/Wi-Fi connection working?
-L2 → Is local network connectivity working?
-L3 → Is IP addressing/routing working?
-L4 → Is TCP connectivity working?
-L5 → Is the session functioning?
-L6 → Is data representation/encryption working?
-L7 → Is the application/server responding?
-```
-
-This prevents random troubleshooting.
-
----
-
-# 18. Common Beginner Mistakes
-
-### Mistake 1
-
-Thinking every protocol belongs perfectly to exactly one OSI layer.
-
-**Reality:** Real protocols and implementations often cross OSI boundaries.
-
----
-
-### Mistake 2
-
-Thinking TCP = Layer 3.
-
-Wrong.
-
-```text
-TCP → Layer 4
-IP  → Layer 3
-```
-
----
-
-### Mistake 3
-
-Thinking MAC address = IP address.
-
-They are different.
-
-```text
-MAC → Layer 2
-IP  → Layer 3
-```
-
----
-
-### Mistake 4
-
-Thinking port numbers belong to IP.
-
-Port numbers are associated with the **Transport layer**.
-
-```text
-IP → identifies host/interface
-Port → identifies transport endpoint/service
-```
-
----
-
-### Mistake 5
-
-Thinking HTTPS is simply “HTTP at Layer 6.”
-
-Too simplistic.
-
-HTTPS is HTTP carried over TLS, and TLS does not map perfectly to a single OSI layer.
-
----
-
-# 19. OSI vs TCP/IP Model
-
-### OSI
-
-```text
-7 Application
-6 Presentation
-5 Session
-4 Transport
-3 Network
-2 Data Link
-1 Physical
-```
-
-### TCP/IP Model
-
-Common 4-layer representation:
-
-```text
-Application
-Transport
-Internet
-Link
-```
-
-Approximate mapping:
-
-| OSI             | TCP/IP      |
-| --------------- | ----------- |
-| L7 Application  | Application |
-| L6 Presentation | Application |
-| L5 Session      | Application |
-| L4 Transport    | Transport   |
-| L3 Network      | Internet    |
-| L2 Data Link    | Link        |
-| L1 Physical     | Link        |
-
-The TCP/IP model is more closely related to the architecture used by the Internet.
-
----
-
-# 20. Must-Know Protocol Mapping
-
-| Protocol | Typical OSI Association |
-| -------- | ----------------------: |
-| Ethernet |                      L2 |
-| ARP      |   L2 / boundary concept |
-| IP       |                      L3 |
-| ICMP     |                      L3 |
-| TCP      |                      L4 |
-| UDP      |                      L4 |
-| DNS      |                      L7 |
-| HTTP     |                      L7 |
-| HTTPS    |                L7 + TLS |
-| FTP      |                      L7 |
-| SSH      |                      L7 |
-| SMTP     |                      L7 |
-
----
-
-# 21. Interview Questions
-
-## Q1. What is the OSI model?
-
-The OSI model is a seven-layer conceptual framework used to understand and standardize network communication.
-
----
-
-## Q2. How many layers does OSI have?
-
-**7 layers.**
-
----
-
-## Q3. Which layer handles routing?
-
-**Layer 3 — Network.**
-
----
-
-## Q4. Which layer uses MAC addresses?
-
-**Layer 2 — Data Link.**
-
----
-
-## Q5. Which layer uses IP addresses?
-
-**Layer 3 — Network.**
-
----
-
-## Q6. Which layer uses port numbers?
-
-**Layer 4 — Transport.**
-
----
-
-## Q7. TCP belongs to which layer?
-
-**Layer 4 — Transport.**
-
----
-
-## Q8. IP belongs to which layer?
-
-**Layer 3 — Network.**
-
----
-
-## Q9. What is the TCP three-way handshake?
-
-Conceptually:
+Important concepts:
 
 ```text
 SYN
@@ -896,273 +183,1349 @@ SYN-ACK
 ACK
 ```
 
-It establishes a TCP connection.
+## UDP
 
----
+Connectionless and does not provide TCP-style delivery guarantees.
 
-## Q10. What is encapsulation?
+Examples:
 
-The process of adding protocol information as data moves down the networking stack.
+* DNS commonly uses UDP
+* Some streaming/real-time applications use UDP
 
----
+Data units:
 
-## Q11. What is decapsulation?
+TCP → Segment
 
-The process of removing and processing protocol information as received data moves up the networking stack.
+UDP → Datagram
 
----
+### VAPT relevance
 
-## Q12. Which layer is HTTP associated with?
-
-**Layer 7 — Application.**
-
----
-
-## Q13. Which layer is responsible for reliable TCP delivery?
-
-**Layer 4 — Transport.**
-
----
-
-## Q14. Which device commonly operates at Layer 2?
-
-**Switch.**
-
----
-
-## Q15. Which device commonly operates at Layer 3?
-
-**Router.**
-
----
-
-# 22. Quick Quiz
-
-### Question 1
-
-A MAC address is primarily associated with which OSI layer?
-
-A. L1
-B. L2
-C. L3
-D. L4
-
-**Answer: B — Data Link**
-
----
-
-### Question 2
-
-Which protocol provides reliable, connection-oriented transport?
-
-A. UDP
-B. IP
-C. TCP
-D. ICMP
-
-**Answer: C — TCP**
-
----
-
-### Question 3
-
-Which layer handles logical addressing?
-
-A. Physical
-B. Data Link
-C. Network
-D. Session
-
-**Answer: C — Network**
-
----
-
-### Question 4
-
-Port 443 is primarily associated with which transport protocols?
-
-A. TCP/UDP
-B. Ethernet
-C. ARP
-D. ICMP
-
-**Answer: A — TCP/UDP**
-
-> The exact protocol depends on the service. HTTPS traditionally uses TCP 443; HTTP/3 uses QUIC over UDP 443.
-
----
-
-### Question 5
-
-What happens during encapsulation?
-
-A. Data is deleted
-B. Headers/trailers are added as data moves down the stack
-C. IP is converted into MAC
-D. TCP is removed
-
-**Answer: B**
-
----
-
-# 23. Practical VAPT Thinking
-
-When you see a network problem, don't immediately run random tools.
-
-Think:
-
-```text
-What layer is involved?
-        ↓
-What protocol is involved?
-        ↓
-What address/identifier is involved?
-        ↓
-What service is involved?
-        ↓
-What security impact could exist?
-```
+Port scanning heavily depends on understanding Layer 4.
 
 Example:
 
 ```text
-Port 22 open
-      ↓
-TCP
-      ↓
-Layer 4
-      ↓
-SSH service
-      ↓
-Layer 7
-      ↓
-Check whether exposure is authorized
-      ↓
-Enumerate configuration/version safely
+192.168.1.10:22
 ```
 
-This is much better than simply memorizing:
+Means:
 
 ```text
-22 = SSH
+IP address = 192.168.1.10
+Port = 22
 ```
+
+Port 22 commonly hosts SSH.
 
 ---
 
-# 24. Practical Commands for Learning
+# 7. Layer 5 — Session
 
-### Check local IP
+The Session layer deals conceptually with establishing, maintaining, and terminating communication sessions.
+
+In modern TCP/IP networking, these responsibilities are often implemented across multiple layers rather than as a distinct standalone layer.
+
+### Important
+
+Do NOT memorize:
+
+> "Every network has a separate Session-layer protocol."
+
+That would be misleading.
+
+Think of Layer 5 as a conceptual way to understand session management.
+
+---
+
+# 8. Layer 6 — Presentation
+
+The Presentation layer concerns how data is represented.
+
+Examples of concepts:
+
+* Encoding
+* Serialization
+* Data formatting
+* Encryption/decryption concepts
+
+Examples:
+
+```text
+UTF-8
+JSON
+XML
+```
+
+Again, modern systems frequently implement these functions inside application libraries/protocols rather than as a separate OSI layer.
+
+---
+
+# 9. Layer 7 — Application
+
+This is where network services used by applications are commonly discussed.
+
+Examples:
+
+* HTTP
+* HTTPS
+* DNS
+* SSH
+* FTP
+* SMTP
+
+Example:
+
+```text
+Browser
+   ↓
+HTTP/HTTPS
+   ↓
+TCP
+   ↓
+IP
+   ↓
+Ethernet/Wi-Fi
+```
+
+### VAPT relevance
+
+This is one of the most important layers for web/application pentesting.
+
+Examples:
+
+* HTTP request analysis
+* Authentication testing
+* API testing
+* Security headers
+* Input validation
+* Session management
+
+---
+
+# 10. Complete Example — Opening a Website
+
+Suppose you visit:
+
+```text
+https://example.com
+```
+
+Conceptually:
+
+```text
+Layer 7 → HTTPS / HTTP
+Layer 6 → Data representation/encryption functions
+Layer 5 → Session-related behavior
+Layer 4 → TCP
+Layer 3 → IP
+Layer 2 → Ethernet/Wi-Fi
+Layer 1 → Physical transmission
+```
+
+The actual implementation is more complex than this simplified diagram.
+
+---
+
+# 11. OSI Troubleshooting Method
+
+When troubleshooting, move layer by layer.
+
+```text
+Physical
+   ↓
+Data Link
+   ↓
+Network
+   ↓
+Transport
+   ↓
+Application
+```
+
+Example:
+
+If a website is unreachable:
+
+### Layer 1
+
+Is the network connection available?
+
+### Layer 2
+
+Is the interface connected?
+
+```bash
+ip link
+```
+
+### Layer 3
+
+Does the machine have an IP?
 
 ```bash
 ip addr
 ```
 
-### Check routing
+Can it reach the gateway?
+
+```bash
+ping <gateway>
+```
+
+### Layer 3 routing
 
 ```bash
 ip route
 ```
 
-### Check connectivity
+### Layer 4
 
-```bash
-ping 8.8.8.8
-```
+Is the service reachable on its port?
 
-### Check TCP ports on your authorized lab
+### Layer 7
 
-```bash
-nmap -sV <LAB-IP>
-```
-
-### Capture traffic
-
-```bash
-sudo tcpdump -i any
-```
-
-Use these only against systems/networks you own or are explicitly authorized to test.
+Does the application actually respond?
 
 ---
 
-# 25. Final Cheat Sheet
+# 12. VAPT Mental Model
 
-```text
-L7 → Application  → HTTP, DNS, SSH, FTP
-L6 → Presentation → Encoding, transformation, encryption concepts
-L5 → Session      → Session management
-L4 → Transport    → TCP, UDP, Ports
-L3 → Network      → IP, ICMP, Routing
-L2 → Data Link    → MAC, Ethernet, Frames
-L1 → Physical     → Bits, Signals, Cables
-```
-
-### Remember This
-
-```text
-MAC  → L2
-IP   → L3
-PORT → L4
-HTTP → L7
-```
-
-### Data Units
-
-```text
-L7–L5 → Data
-L4    → Segment / Datagram
-L3    → Packet
-L2    → Frame
-L1    → Bits
-```
-
----
-
-# 26. What You Should Be Able to Explain After This Lesson
-
-You should be able to answer these without looking at notes:
-
-* What is the OSI model?
-* Why are there seven layers?
-* Difference between MAC and IP?
-* Difference between IP and port?
-* TCP vs UDP?
-* What happens during a TCP handshake?
-* What is encapsulation?
-* What is decapsulation?
-* Which layer handles routing?
-* Which layer handles ports?
-* Where does HTTP operate?
-* Why can one security tool interact with multiple OSI layers?
-* How can the OSI model help troubleshoot a network?
-* How does the OSI model help a VAPT professional?
-
----
-
-# Key Takeaway
-
-Don't learn the OSI model only as:
-
-> **“7 layers to memorize for an exam.”**
-
-Learn it as a **mental map of network communication**.
-
-When you perform VAPT, think:
+Think:
 
 ```text
 Physical
    ↓
-Local Network
+MAC / VLAN
    ↓
 IP / Routing
    ↓
 TCP / UDP / Ports
    ↓
-Protocol
+Services
    ↓
-Application
+Applications
    ↓
-Security Issue
+Authentication / Data
 ```
 
-Once this becomes natural, tools such as **Nmap, Wireshark, Burp Suite, Scapy, and Python socket programming** become much easier to understand because you know what is actually happening underneath the tool.
+This helps you move from:
+
+> "There is an IP"
+
+to:
+
+> "What service is running?"
+
+to:
+
+> "What application is behind it?"
+
+to:
+
+> "What security controls are present?"
+
+---
+
+# 13. Interview Questions
+
+### Q1. What is OSI?
+
+A conceptual seven-layer model for understanding network communication.
+
+### Q2. Which layer uses IP?
+
+Layer 3.
+
+### Q3. Which layer uses TCP/UDP?
+
+Layer 4.
+
+### Q4. Which layer contains HTTP?
+
+Layer 7 in the OSI mapping commonly used for learning.
+
+### Q5. What is the Layer 2 data unit?
+
+Frame.
+
+### Q6. What is the Layer 3 data unit?
+
+Packet.
+
+### Q7. What is the Layer 4 data unit?
+
+TCP segment / UDP datagram.
+
+### Q8. Which device primarily operates at Layer 2?
+
+Switch.
+
+### Q9. Which device primarily operates at Layer 3?
+
+Router.
+
+---
+
+# 14. MCQs
+
+### 1. IP operates primarily at which OSI layer?
+
+A. Layer 2
+B. Layer 3
+C. Layer 4
+D. Layer 7
+
+**Answer: B**
+
+### 2. TCP belongs to:
+
+A. Layer 2
+B. Layer 3
+C. Layer 4
+D. Layer 6
+
+**Answer: C**
+
+### 3. Ethernet frames are associated with:
+
+A. Layer 1
+B. Layer 2
+C. Layer 4
+D. Layer 7
+
+**Answer: B**
+
+### 4. HTTP is generally mapped to:
+
+A. Layer 1
+B. Layer 2
+C. Layer 4
+D. Layer 7
+
+**Answer: D**
+
+### 5. A router primarily works at:
+
+A. Layer 1
+B. Layer 2
+C. Layer 3
+D. Layer 7
+
+**Answer: C**
+
+---
+
+# 15. Must Remember
+
+```text
+L1 → Physical → Bits
+L2 → Data Link → Frames / MAC
+L3 → Network → Packets / IP
+L4 → Transport → TCP / UDP / Ports
+L5 → Session
+L6 → Presentation
+L7 → Application → HTTP / DNS / SSH
+```
+
+## Final Mental Model
+
+> MAC helps local delivery.
+> IP helps routing between networks.
+> TCP/UDP provides transport.
+> Ports identify service endpoints.
+> Application protocols define what the service does.
+
+````
+
+---
+
+# 02 — TCP/IP Model Explained
+
+```markdown
+# TCP/IP Model Explained
+
+## 1. What is TCP/IP?
+
+TCP/IP is the practical networking protocol suite used by the Internet and most modern networks.
+
+Unlike OSI, TCP/IP is not primarily a seven-layer conceptual teaching model.
+
+A common four-layer TCP/IP model is:
+
+| TCP/IP Layer | Examples |
+|---|---|
+| Application | HTTP, DNS, SSH, DHCP |
+| Transport | TCP, UDP |
+| Internet | IPv4, IPv6, ICMP |
+| Network Access / Link | Ethernet, Wi-Fi |
+
+---
+
+# 2. OSI vs TCP/IP
+
+| OSI | TCP/IP |
+|---|---|
+| 7 layers | Commonly 4 layers |
+| Conceptual/reference model | Practical protocol suite/model |
+| Useful for learning | Used by real networks |
+
+Mapping:
+
+```text
+OSI 7 Application
+OSI 6 Presentation       → TCP/IP Application
+OSI 5 Session
+
+OSI 4 Transport          → TCP/IP Transport
+
+OSI 3 Network            → TCP/IP Internet
+
+OSI 2 Data Link
+OSI 1 Physical           → TCP/IP Link/Network Access
+````
+
+---
+
+# 3. Application Layer
+
+Examples:
+
+```text
+HTTP
+HTTPS
+DNS
+SSH
+FTP
+SMTP
+DHCP
+```
+
+This layer provides network services to applications.
+
+### VAPT relevance
+
+A pentester often begins application/service enumeration here.
+
+Questions:
+
+```text
+What service?
+What protocol?
+What version?
+What authentication?
+What data?
+What security controls?
+```
+
+---
+
+# 4. Transport Layer
+
+Main protocols:
+
+## TCP
+
+Reliable, connection-oriented transport.
+
+Important:
+
+```text
+SYN
+SYN-ACK
+ACK
+```
+
+## UDP
+
+Connectionless transport.
+
+Important for understanding:
+
+* DNS
+* VoIP
+* Streaming
+* Some discovery protocols
+
+### VAPT
+
+Port numbers are extremely important.
+
+```text
+IP:Port
+```
+
+Example:
+
+```text
+192.168.1.10:443
+```
+
+---
+
+# 5. Internet Layer
+
+Main protocols:
+
+* IPv4
+* IPv6
+* ICMP
+
+Main responsibility:
+
+> Logical addressing and routing.
+
+Example:
+
+```text
+192.168.1.10
+      ↓
+Router
+      ↓
+10.0.0.10
+```
+
+---
+
+# 6. Link Layer
+
+Responsible for communication over the local network medium.
+
+Examples:
+
+* Ethernet
+* Wi-Fi
+* MAC addressing
+
+---
+
+# 7. Real Traffic Flow
+
+Suppose:
+
+```text
+Client → Web Server
+```
+
+Conceptually:
+
+```text
+HTTP request
+    ↓
+TCP segment
+    ↓
+IP packet
+    ↓
+Ethernet/Wi-Fi frame
+    ↓
+Network medium
+```
+
+At the destination, the process is reversed.
+
+---
+
+# 8. Encapsulation
+
+Sender:
+
+```text
+Application Data
+      ↓
+TCP/UDP Header + Data
+      ↓
+IP Header + Segment
+      ↓
+Link Header + Packet
+```
+
+Receiver:
+
+```text
+Frame
+ ↓
+Packet
+ ↓
+Segment/Datagram
+ ↓
+Application Data
+```
+
+This is called:
+
+> Encapsulation and decapsulation.
+
+---
+
+# 9. VAPT Perspective
+
+TCP/IP knowledge helps you understand:
+
+* Network boundaries
+* Ports
+* Services
+* Routing
+* Firewalls
+* Network segmentation
+* Traffic analysis
+* Enumeration
+
+A strong pentester doesn't just run a scanner.
+
+They understand what the scanner is actually observing.
+
+---
+
+# 10. Practical Kali Commands
+
+Authorized lab only:
+
+```bash
+ip addr
+```
+
+View interfaces and IP addresses.
+
+```bash
+ip route
+```
+
+View routing table.
+
+```bash
+ss -tuln
+```
+
+View listening TCP/UDP sockets.
+
+```bash
+ping <authorized-host>
+```
+
+Test basic IP connectivity.
+
+---
+
+# 11. Interview Questions
+
+### What is TCP/IP?
+
+A practical networking protocol suite used by modern networks and the Internet.
+
+### TCP vs UDP?
+
+TCP provides connection-oriented reliable delivery; UDP is connectionless and does not provide TCP's reliability mechanisms.
+
+### What does IP do?
+
+Provides logical addressing and routing.
+
+### What does a port represent?
+
+A transport-layer endpoint used to identify a service/application endpoint on a host.
+
+### What is encapsulation?
+
+Adding protocol-specific information as data moves down the networking stack.
+
+---
+
+# Must Remember
+
+```text
+Application → HTTP/DNS/SSH
+Transport   → TCP/UDP
+Internet    → IP/ICMP
+Link        → Ethernet/Wi-Fi
+```
+
+Mental model:
+
+> Application = What am I communicating?
+>
+> Transport = How should it be delivered?
+>
+> Internet = Where should it go?
+>
+> Link = How do I send it on this local network?
+
+````
+
+---
+
+# 03 — Data Encapsulation Process
+
+```markdown
+# Data Encapsulation Process
+
+## 1. What is Encapsulation?
+
+Encapsulation is the process of adding protocol-specific information as application data moves down the networking stack.
+
+Example:
+
+```text
+Application
+    ↓
+TCP
+    ↓
+IP
+    ↓
+Ethernet
+````
+
+Each layer adds information needed for communication.
+
+---
+
+# 2. Simple Example
+
+Suppose you send:
+
+```text
+Hello
+```
+
+The application starts with:
+
+```text
+DATA
+```
+
+TCP adds a header:
+
+```text
+TCP HEADER + DATA
+```
+
+IP adds another header:
+
+```text
+IP HEADER + TCP HEADER + DATA
+```
+
+Ethernet adds a frame header/trailer:
+
+```text
+ETHERNET HEADER
++
+IP HEADER
++
+TCP HEADER
++
+DATA
++
+ETHERNET TRAILER
+```
+
+The exact wire representation varies by protocol and technology, but this is the useful conceptual model.
+
+---
+
+# 3. Data Names at Different Layers
+
+| Layer       | Common Data Unit               |
+| ----------- | ------------------------------ |
+| Application | Data / Message                 |
+| Transport   | Segment (TCP) / Datagram (UDP) |
+| Internet    | Packet                         |
+| Link        | Frame                          |
+| Physical    | Bits/signals                   |
+
+---
+
+# 4. Encapsulation Flow
+
+```text
+Application Data
+       ↓
+[TCP Header + Data]
+       ↓
+[IP Header + TCP Header + Data]
+       ↓
+[Ethernet Header + IP Packet + Trailer]
+       ↓
+Bits/signals
+```
+
+---
+
+# 5. Decapsulation
+
+At the receiving machine, headers are processed in the reverse direction.
+
+```text
+Frame
+ ↓
+Packet
+ ↓
+TCP Segment
+ ↓
+Application Data
+```
+
+This is called:
+
+> Decapsulation.
+
+---
+
+# 6. Why Headers Matter
+
+Headers contain control information.
+
+Examples:
+
+### TCP
+
+May contain:
+
+* Source port
+* Destination port
+* Sequence number
+* Acknowledgment number
+* Flags
+* Window information
+
+### IP
+
+Contains information such as:
+
+* Source IP
+* Destination IP
+* TTL/Hop Limit
+* Protocol/Next Header information
+
+### Ethernet
+
+Contains:
+
+* Source MAC
+* Destination MAC
+* EtherType
+
+---
+
+# 7. Example: HTTPS Request
+
+Simplified:
+
+```text
+Application
+HTTPS data
+   ↓
+TCP
+Source port → Destination port 443
+   ↓
+IP
+Source IP → Destination IP
+   ↓
+Ethernet/Wi-Fi
+Source MAC → Destination MAC
+```
+
+Notice:
+
+> MAC addresses are used for local-link delivery, while IP addresses identify endpoints at the network layer.
+
+---
+
+# 8. Router Behavior
+
+A router receives a frame and processes the packet inside it.
+
+Conceptually:
+
+```text
+Incoming Frame
+      ↓
+Remove/process link-layer information
+      ↓
+Inspect IP packet
+      ↓
+Routing decision
+      ↓
+Create outgoing link-layer frame
+      ↓
+Next network
+```
+
+The Layer-2 frame is normally rebuilt for the next link.
+
+The IP packet continues toward its destination, although some IP fields such as TTL/Hop Limit are updated during forwarding.
+
+---
+
+# 9. VAPT Relevance
+
+Encapsulation knowledge helps when:
+
+* Reading Wireshark captures
+* Understanding Nmap results
+* Troubleshooting scans
+* Understanding firewall behavior
+* Analyzing TCP connections
+* Investigating suspicious traffic
+* Understanding network segmentation
+
+---
+
+# 10. Wireshark Mental Model
+
+When looking at a packet, think:
+
+```text
+Frame
+ └── Ethernet
+      └── IP
+           └── TCP/UDP
+                └── Application protocol
+```
+
+Example:
+
+```text
+Ethernet
+  ↓
+IPv4
+  ↓
+TCP
+  ↓
+HTTP
+```
+
+---
+
+# 11. Interview Questions
+
+### What is encapsulation?
+
+Adding protocol information as data moves down the networking stack.
+
+### What is decapsulation?
+
+Processing/removing protocol information as data moves up the receiving stack.
+
+### What is a TCP segment?
+
+The transport-layer data unit associated with TCP.
+
+### What is an IP packet?
+
+An IP-layer packet containing transport-layer information and application data.
+
+### What is an Ethernet frame?
+
+A link-layer data unit used to transport a network-layer packet over an Ethernet network.
+
+---
+
+# Must Remember
+
+```text
+Application → Data
+TCP → Segment
+IP → Packet
+Ethernet → Frame
+Physical → Bits
+```
+
+The golden flow:
+
+```text
+DATA
+ ↓
+SEGMENT
+ ↓
+PACKET
+ ↓
+FRAME
+ ↓
+BITS
+```
+
+Receiver:
+
+```text
+BITS
+ ↓
+FRAME
+ ↓
+PACKET
+ ↓
+SEGMENT
+ ↓
+DATA
+```
+
+````
+
+---
+
+# 04 — Common Ports & Services Cheatsheet
+
+```markdown
+# Common Ports & Services Cheatsheet
+
+## 1. What is a Port?
+
+A port is a transport-layer endpoint identified by a number.
+
+Port numbers range from:
+
+```text
+0 – 65535
+````
+
+Ports help the operating system deliver network traffic to the appropriate application/service.
+
+Example:
+
+```text
+192.168.1.10:22
+```
+
+Means:
+
+```text
+IP   = 192.168.1.10
+Port = 22
+```
+
+---
+
+# 2. Important Ports
+
+|    Port | Protocol/Service     | Common Use                                    |
+| ------: | -------------------- | --------------------------------------------- |
+|      20 | FTP                  | FTP data                                      |
+|      21 | FTP                  | FTP control                                   |
+|      22 | SSH                  | Secure remote administration                  |
+|      23 | Telnet               | Remote terminal; insecure by modern standards |
+|      25 | SMTP                 | Mail transfer                                 |
+|      53 | DNS                  | Name resolution                               |
+|   67/68 | DHCP                 | Address configuration                         |
+|      80 | HTTP                 | Web                                           |
+|     110 | POP3                 | Email retrieval                               |
+|     123 | NTP                  | Time synchronization                          |
+|     135 | MS RPC               | Windows RPC                                   |
+| 137-139 | NetBIOS              | Legacy Windows networking                     |
+|     143 | IMAP                 | Email retrieval                               |
+|     161 | SNMP                 | Network management                            |
+|     389 | LDAP                 | Directory services                            |
+|     443 | HTTPS                | Encrypted web                                 |
+|     445 | SMB                  | Windows file/network sharing                  |
+|     587 | SMTP submission      | Email submission                              |
+|     636 | LDAPS                | LDAP over TLS                                 |
+|     993 | IMAPS                | IMAP over TLS                                 |
+|     995 | POP3S                | POP3 over TLS                                 |
+|    1433 | Microsoft SQL Server | Database                                      |
+|    3306 | MySQL                | Database                                      |
+|    3389 | RDP                  | Windows remote desktop                        |
+|    5432 | PostgreSQL           | Database                                      |
+|    5900 | VNC                  | Remote desktop                                |
+
+---
+
+# 3. Important Warning
+
+A port number does NOT guarantee the service.
+
+For example:
+
+```text
+Port 80 → commonly HTTP
+```
+
+But an administrator can configure another service on port 80.
+
+Therefore:
+
+> Port number = clue, not proof.
+
+This is why service detection matters.
+
+---
+
+# 4. TCP vs UDP
+
+Some services primarily use TCP, some UDP, and some can use both depending on the protocol/version/configuration.
+
+Examples:
+
+```text
+HTTP  → TCP commonly
+HTTPS → TCP commonly
+SSH   → TCP
+DNS   → UDP commonly, TCP also used
+DHCP  → UDP
+NTP   → UDP
+```
+
+Do not blindly assume every protocol has only one transport protocol.
+
+---
+
+# 5. VAPT Workflow
+
+When you discover:
+
+```text
+22/tcp open
+```
+
+Don't immediately conclude:
+
+> "SSH is definitely vulnerable."
+
+Instead:
+
+```text
+Open port
+   ↓
+Identify service
+   ↓
+Identify version/configuration
+   ↓
+Understand exposure
+   ↓
+Check security posture
+   ↓
+Validate findings safely
+```
+
+---
+
+# 6. Safe Lab Commands
+
+On your own machine/lab:
+
+```bash
+ss -tuln
+```
+
+Shows listening TCP/UDP sockets.
+
+Authorized Nmap lab:
+
+```bash
+nmap -sV <authorized-target>
+```
+
+`-sV` requests service/version detection.
+
+Example for a deliberately authorized practice target:
+
+```bash
+nmap -sV scanme.nmap.org
+```
+
+Always follow the target owner's testing rules.
+
+---
+
+# 7. Port States in Nmap
+
+Common states include:
+
+### open
+
+An application is actively accepting connections.
+
+### closed
+
+The port is reachable, but no application is listening.
+
+### filtered
+
+A firewall/filter prevents Nmap from determining whether it is open.
+
+Important:
+
+> "Filtered" does NOT mean "secure."
+
+It means Nmap could not determine the state normally because filtering interfered.
+
+---
+
+# 8. VAPT Thinking
+
+Suppose you discover:
+
+```text
+22/tcp open
+80/tcp open
+443/tcp open
+3306/tcp open
+```
+
+Your next questions should be:
+
+```text
+What services?
+What versions?
+Are they intended to be exposed?
+Is the database supposed to be externally reachable?
+Is encryption correctly configured?
+Is authentication required?
+Are there unnecessary services?
+Are firewall rules/segmentation correct?
+```
+
+This is better than simply collecting a list of ports.
+
+---
+
+# 9. Common Beginner Mistakes
+
+### Mistake 1
+
+Thinking:
+
+> Port 443 = automatically secure.
+
+Wrong.
+
+HTTPS can still have application vulnerabilities.
+
+### Mistake 2
+
+Thinking:
+
+> Closed port = vulnerable.
+
+Wrong.
+
+Closed means no service is accepting connections there.
+
+### Mistake 3
+
+Thinking:
+
+> Port number identifies the service with certainty.
+
+Wrong.
+
+Port numbers are conventions.
+
+### Mistake 4
+
+Running scans against random systems.
+
+Always use:
+
+* Your own lab
+* CTF/lab targets
+* Explicitly authorized systems
+* Targets whose rules permit the testing activity
+
+---
+
+# 10. Interview Questions
+
+### Q1. What is port 22?
+
+Commonly SSH.
+
+### Q2. What is port 443?
+
+Commonly HTTPS.
+
+### Q3. What is port 53?
+
+DNS.
+
+### Q4. What is port 445?
+
+SMB.
+
+### Q5. What is port 3389?
+
+RDP.
+
+### Q6. What is port 3306?
+
+Commonly MySQL.
+
+### Q7. What is port 5432?
+
+Commonly PostgreSQL.
+
+### Q8. Does port number guarantee the service?
+
+No.
+
+### Q9. What does Nmap `-sV` do?
+
+Attempts service/version detection.
+
+### Q10. What does "filtered" mean?
+
+A filtering mechanism prevents Nmap from determining the port state normally.
+
+---
+
+# 11. Quick Memorization
+
+```text
+21   → FTP
+22   → SSH
+23   → Telnet
+25   → SMTP
+53   → DNS
+67/68 → DHCP
+80   → HTTP
+110  → POP3
+123  → NTP
+143  → IMAP
+161  → SNMP
+389  → LDAP
+443  → HTTPS
+445  → SMB
+636  → LDAPS
+1433 → MSSQL
+3306 → MySQL
+3389 → RDP
+5432 → PostgreSQL
+5900 → VNC
+```
+
+---
+
+# Final Mental Model
+
+```text
+IP Address
+    ↓
+Host
+    ↓
+Port
+    ↓
+Service
+    ↓
+Version
+    ↓
+Configuration
+    ↓
+Attack Surface
+    ↓
+Security Assessment
+```
+
+A professional pentester doesn't stop at:
+
+> "Port 80 is open."
+
+They ask:
+
+> "What is running there, why is it exposed, how is it configured, and what security risk does that create?"
+
+```
+
+### Overall quality target
+
+For this `01-Networking-Fundamentals` section, I'd rate this structure **9.7/10**.
+
+The remaining **0.3** is not because the theory is missing; to reach true 10/10, the next step is **hands-on validation**: Wireshark packet analysis, TCP handshake observation, `ip route`/routing labs, subnet exercises, and an isolated Kali + Windows practice network.
+```
+
+[1]: https://github.com/JPKUMAWAT/CyberSecurity-VAPT-Networking-Pro-/tree/main/01-Networking-Fundamentals "CyberSecurity-VAPT-Networking-Pro-/01-Networking-Fundamentals at main · JPKUMAWAT/CyberSecurity-VAPT-Networking-Pro- · GitHub"
