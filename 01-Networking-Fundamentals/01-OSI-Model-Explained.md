@@ -1,8 +1,4 @@
-Haan. Maine tumhare actual GitHub folder ko check kiya — `01-Networking-Fundamentals` me currently ye 4 files hain: **OSI Model, TCP/IP Model, Data Encapsulation, Common Ports & Services**. ([GitHub][1])
 
-Neeche main inhe **beginner → intermediate → VAPT → interview** level par upgrade kar raha hoon. Language simple rakhi hai, lekin technical concepts accurate hain.
-
----
 
 # OSI Model Explained
 
