@@ -1,516 +1,400 @@
-# 07 – Routing Tables Deep Dive
 
-> **Goal:** Understand how Linux and network devices decide where packets go.
->
-> **Level:** 🟢 Beginner → 🟡 Intermediate → 🔴 VAPT
->
-> **Cybersecurity relevance:** ⭐⭐⭐⭐⭐
->
-> **Prerequisite:** IPv4, CIDR, Subnetting, TCP/IP basics
 
----
+## 1. What Is Routing?
 
-# 1. What Is Routing?
+**Routing** is the process of deciding **where a network packet should be sent next** so that it can reach its destination.
 
-**Routing** is the process of deciding **where a network packet should be sent next**.
-
-Imagine sending a parcel:
+Simple example:
 
 ```text
-You
- ↓
-Local Road
- ↓
-Main Road
- ↓
-Highway
- ↓
-Destination
-```
-
-Networking works similarly:
-
-```text
-Your Computer
-     ↓
+Your PC
+  |
+  | Packet → 8.8.8.8
+  v
 Default Gateway
-     ↓
-Router
-     ↓
+  |
+  v
+ISP Router
+  |
+  v
 Internet
-     ↓
-Destination Server
+  |
+  v
+8.8.8.8
 ```
 
-A device uses its **routing table** to make this decision.
+Your computer usually does **not** know the complete path to `8.8.8.8`.
 
-### Simple definition
+Instead, it decides:
 
-> **Routing table = A set of rules that tells a device where to send packets.**
-
----
-
-# 2. Why Routing Is Important
-
-Without routing, a device would not know:
-
-* Where another network is located
-* Which gateway to use
-* Which interface should send traffic
-* Whether the destination is local or remote
-* Where Internet traffic should go
-
-For VAPT, routing knowledge helps you understand:
-
-* Network architecture
-* Internal networks
-* VPN routes
-* Pivoting
-* Segmentation
-* Lateral movement
-* Firewall/network restrictions
-* Multi-interface systems
+> "I don't have a direct route to this destination, so I'll send the packet to my default gateway."
 
 ---
 
-# 3. What Is a Routing Table?
+# 2. What Is a Routing Table?
 
-A routing table contains information such as:
+A **routing table** is a set of rules maintained by a host or router that tells it where to forward packets.
 
-| Destination    | Gateway     | Interface | Metric |
-| -------------- | ----------- | --------- | -----: |
-| 192.168.1.0/24 | Direct      | eth0      |    100 |
-| 10.10.10.0/24  | 192.168.1.1 | eth0      |    100 |
-| 0.0.0.0/0      | 192.168.1.1 | eth0      |    100 |
-
-Think of it as a **map**.
+A simplified routing table might look like:
 
 ```text
-Destination
-     ↓
-Which route?
-     ↓
-Which gateway?
-     ↓
-Which interface?
-     ↓
-Send packet
+Destination       Gateway          Interface
+192.168.1.0/24    Direct           eth0
+10.0.0.0/8        192.168.1.1      eth0
+0.0.0.0/0         192.168.1.1      eth0
+```
+
+Think of it as a **map**:
+
+```text
+Destination → Where should I send it?
 ```
 
 ---
 
-# 4. Important Routing Terms
+# 3. Basic Routing Terms
 
-## 4.1 Destination
+| Term               | Meaning                                        |
+| ------------------ | ---------------------------------------------- |
+| Destination        | Network/address the packet wants to reach      |
+| Prefix/Mask        | Defines how large the destination network is   |
+| Gateway / Next Hop | Router to which the packet is forwarded        |
+| Interface          | Network interface used to send packet          |
+| Metric             | Preference/cost associated with a route        |
+| Default Route      | Route used when no more specific route matches |
+| Route              | A rule describing how to reach a destination   |
 
-The network or host where the packet needs to go.
+---
 
-Example:
+# 4. Destination Network
+
+Suppose your machine has:
+
+```text
+IP:      192.168.1.20
+Mask:    255.255.255.0
+```
+
+Equivalent CIDR:
+
+```text
+192.168.1.20/24
+```
+
+The directly connected network is:
 
 ```text
 192.168.1.0/24
 ```
 
-means:
+So your computer knows:
 
 ```text
-192.168.1.0 – 192.168.1.255
+192.168.1.0 ───── Directly reachable
 ```
+
+Example:
+
+```text
+PC:     192.168.1.20
+Server: 192.168.1.50
+```
+
+Because both belong to:
+
+```text
+192.168.1.0/24
+```
+
+the PC can communicate with the server directly at Layer 2, normally using ARP for IPv4 address resolution.
 
 ---
 
-## 4.2 Gateway
+# 5. What Is a Default Gateway?
 
-A gateway is the next device that forwards traffic toward another network.
+The **default gateway** is normally the router that a host uses when it doesn't have a more specific route for the destination.
 
 Example:
 
 ```text
 PC
- |
- | 192.168.1.10
- |
-Gateway
-192.168.1.1
- |
+192.168.1.20
+     |
+     | 192.168.1.1
+     v
+Router
+     |
+     v
 Internet
 ```
 
-Usually your home router acts as the default gateway.
-
----
-
-# 5. Default Gateway
-
-The **default gateway** is used when there is no more specific route available.
-
-Example:
+Routing table:
 
 ```text
-Destination: 8.8.8.8
+0.0.0.0/0 → 192.168.1.1
 ```
 
-Your computer checks the routing table.
+This means:
 
-If it doesn't have a specific route for `8.8.8.8`, it uses:
-
-```text
-0.0.0.0/0
-```
-
-This is the **default route**.
+> For destinations not covered by a more specific route, send traffic to `192.168.1.1`.
 
 ---
 
 # 6. Default Route
 
-The most important default route is:
+For IPv4:
 
 ```text
 0.0.0.0/0
 ```
 
-Meaning:
+For IPv6:
 
-> "If no better route exists, send traffic here."
+```text
+::/0
+```
+
+These represent the **default route**.
 
 Example:
 
 ```text
-default via 192.168.1.1 dev eth0
+Destination     Gateway
+0.0.0.0/0       192.168.1.1
 ```
 
-Interpretation:
+If your computer wants to reach:
 
 ```text
-Default traffic
-      ↓
-Gateway 192.168.1.1
-      ↓
-Interface eth0
+8.8.8.8
+```
+
+and there is no more specific route, it uses:
+
+```text
+0.0.0.0/0
+```
+
+and sends the packet toward:
+
+```text
+192.168.1.1
 ```
 
 ---
 
-# 7. Network Interface
-
-A network interface is the connection through which traffic leaves or enters a system.
-
-Examples:
-
-```text
-eth0
-wlan0
-ens33
-tun0
-lo
-```
-
-Common examples:
-
-| Interface | Typical purpose                |
-| --------- | ------------------------------ |
-| eth0      | Ethernet                       |
-| wlan0     | Wi-Fi                          |
-| lo        | Loopback                       |
-| tun0      | VPN/tunnel                     |
-| ens33     | Ethernet on some Linux systems |
-
-Interface names can vary depending on the system.
-
----
-
-# 8. Linux Routing Commands
-
-The modern command you should learn first is:
-
-```bash
-ip route
-```
-
-Example:
-
-```text
-default via 192.168.1.1 dev eth0
-192.168.1.0/24 dev eth0 proto kernel scope link src 192.168.1.10
-```
-
----
-
-# 9. Understanding `ip route`
-
-Run:
-
-```bash
-ip route
-```
-
-You might see:
-
-```text
-default via 192.168.1.1 dev eth0
-192.168.1.0/24 dev eth0 proto kernel scope link src 192.168.1.10
-```
-
-Let's understand each part.
-
----
-
-## Route 1
-
-```text
-default via 192.168.1.1 dev eth0
-```
-
-Means:
-
-```text
-Default route
-     ↓
-Gateway = 192.168.1.1
-     ↓
-Interface = eth0
-```
-
----
-
-## Route 2
-
-```text
-192.168.1.0/24 dev eth0
-```
-
-Means:
-
-```text
-Destination network = 192.168.1.0/24
-Interface = eth0
-```
-
-Because this network is directly connected, a gateway isn't necessary.
-
----
-
-# 10. Directly Connected Network
-
-Suppose your machine has:
-
-```text
-IP:      192.168.1.10
-Mask:    255.255.255.0
-```
-
-CIDR:
-
-```text
-192.168.1.10/24
-```
-
-Network:
-
-```text
-192.168.1.0/24
-```
-
-Your machine can directly communicate with:
-
-```text
-192.168.1.x
-```
-
-without sending the traffic through the default gateway.
-
-Example:
-
-```text
-PC
-192.168.1.10
-   |
-   | Direct
-   |
-192.168.1.20
-```
-
----
-
-# 11. Local vs Remote Destination
+# 7. Directly Connected Routes
 
 Suppose:
 
 ```text
-Your IP:
-192.168.1.10/24
+IP:
+192.168.10.25/24
 ```
 
-### Destination 1
+The machine automatically knows:
 
 ```text
-192.168.1.20
+192.168.10.0/24
 ```
 
-Same network.
+is directly connected.
 
 Therefore:
 
 ```text
-PC → Directly to destination
+192.168.10.50
 ```
 
-### Destination 2
+is on the local network.
+
+But:
 
 ```text
-8.8.8.8
+192.168.20.50
 ```
 
-Different network.
+is not.
 
-Therefore:
-
-```text
-PC
- ↓
-Default Gateway
- ↓
-Internet
- ↓
-8.8.8.8
-```
+The second destination normally requires a router.
 
 ---
 
-# 12. How Does a Computer Choose a Route?
+# 8. How Does a Host Choose a Route?
 
-This is one of the **most important routing concepts**.
+This is one of the **most important concepts**.
 
 Suppose the routing table contains:
 
 ```text
 10.0.0.0/8
 10.10.0.0/16
-10.10.10.0/24
+10.10.20.0/24
 0.0.0.0/0
 ```
 
 Destination:
 
 ```text
-10.10.10.50
+10.10.20.50
 ```
 
-Which route is selected?
+Several routes match.
 
-Answer:
+Which one wins?
 
-```text
-10.10.10.0/24
-```
+## Longest Prefix Match
 
-Why?
-
-Because it is the **most specific matching route**.
-
----
-
-# 13. Longest Prefix Match
-
-Routers generally choose the route with the **longest matching prefix**.
-
-Example:
+The route with the **most specific matching prefix** is preferred.
 
 ```text
-10.0.0.0/8
+10.10.20.0/24     ← Most specific
 10.10.0.0/16
-10.10.10.0/24
-```
-
-Destination:
-
-```text
-10.10.10.50
-```
-
-All three may match.
-
-But:
-
-```text
-/24 > /16 > /8
+10.0.0.0/8
+0.0.0.0/0         ← Least specific
 ```
 
 Therefore:
 
 ```text
-10.10.10.0/24
+10.10.20.0/24
 ```
 
 wins.
 
-### Remember:
+### Must Remember
 
-> **More specific route = preferred over less specific matching route.**
-
-This is extremely important for networking interviews.
+> **More specific route → preferred over less specific matching route.**
 
 ---
 
-# 14. Routing Example
+# 9. Routing Example
 
 Imagine:
 
 ```text
 PC
 192.168.1.10
-   |
-   | eth0
-   |
+     |
+     v
 Router
 192.168.1.1
-   |
-   +------ 10.10.10.0/24
-   |
-   +------ Internet
+     |
+     +------ 10.10.10.0/24
+     |
+     +------ Internet
 ```
 
 Routing table:
 
 ```text
-192.168.1.0/24 dev eth0
-10.10.10.0/24 via 192.168.1.1
-default via 192.168.1.1
+Destination       Next Hop
+192.168.1.0/24    Direct
+10.10.10.0/24     192.168.1.1
+0.0.0.0/0         192.168.1.1
 ```
 
-Traffic to:
+If destination is:
 
 ```text
 10.10.10.50
 ```
 
-goes:
+the host uses:
 
 ```text
-PC
- ↓
-192.168.1.1
- ↓
-10.10.10.50
+10.10.10.0/24
+```
+
+If destination is:
+
+```text
+8.8.8.8
+```
+
+it uses:
+
+```text
+0.0.0.0/0
 ```
 
 ---
 
-# 15. `ip route get`
+# 10. Viewing Routing Tables
 
-One of the most useful commands for troubleshooting:
+## Linux / Kali
+
+Modern Linux:
+
+```bash
+ip route
+```
+
+Example:
+
+```text
+default via 192.168.1.1 dev eth0
+192.168.1.0/24 dev eth0 proto kernel scope link src 192.168.1.20
+```
+
+Interpretation:
+
+```text
+default via 192.168.1.1
+```
+
+means:
+
+```text
+Default gateway = 192.168.1.1
+```
+
+And:
+
+```text
+192.168.1.0/24 dev eth0
+```
+
+means:
+
+```text
+192.168.1.0/24 is directly connected through eth0
+```
+
+---
+
+# 11. Useful Linux Commands
+
+### Show routes
+
+```bash
+ip route
+```
+
+### Show routing table in more detail
+
+```bash
+ip route show
+```
+
+### Show interfaces
+
+```bash
+ip addr
+```
+
+### Check which route Linux would use
 
 ```bash
 ip route get 8.8.8.8
 ```
 
-It tells you which route Linux would use for that destination.
+This is extremely useful for troubleshooting.
 
 Example:
 
 ```text
-8.8.8.8 via 192.168.1.1 dev eth0 src 192.168.1.10
+8.8.8.8 via 192.168.1.1 dev eth0 src 192.168.1.20
 ```
 
 Meaning:
@@ -519,147 +403,64 @@ Meaning:
 Destination → 8.8.8.8
 Gateway     → 192.168.1.1
 Interface   → eth0
-Source IP   → 192.168.1.10
+Source IP   → 192.168.1.20
 ```
-
-### VAPT value
-
-Very useful when troubleshooting:
-
-* VPNs
-* Multiple interfaces
-* Lab networks
-* Pivoting
-* Routing problems
 
 ---
 
-# 16. Viewing Interfaces
+# 12. Windows Routing Table
 
-Use:
+Windows:
 
-```bash
-ip addr
+```cmd
+route print
 ```
 
 or:
 
-```bash
-ip a
+```cmd
+ipconfig
 ```
 
-Example:
+For PowerShell:
 
-```text
-2: eth0:
-    inet 192.168.1.10/24
+```powershell
+Get-NetRoute
 ```
 
-This tells you:
+To inspect the route to a destination:
 
-```text
-Interface = eth0
-IP = 192.168.1.10
-Network = /24
+```cmd
+tracert 8.8.8.8
 ```
 
 ---
 
-# 17. Viewing Routing Information
+# 13. Linux vs Windows
 
-Basic:
-
-```bash
-ip route
-```
-
-More detailed:
-
-```bash
-ip -4 route
-```
-
-IPv6:
-
-```bash
-ip -6 route
-```
+| Task                  | Linux/Kali        | Windows          |
+| --------------------- | ----------------- | ---------------- |
+| Show IP               | `ip addr`         | `ipconfig`       |
+| Show routes           | `ip route`        | `route print`    |
+| Route lookup          | `ip route get IP` | `tracert IP`     |
+| Interface information | `ip link`         | `Get-NetAdapter` |
+| Trace path            | `traceroute`      | `tracert`        |
 
 ---
 
-# 18. Adding a Route
+# 14. Routing vs Switching
 
-In a controlled lab, you can add a route.
-
-Example:
-
-```bash
-sudo ip route add 10.10.10.0/24 via 192.168.1.1
-```
-
-Meaning:
-
-```text
-To reach 10.10.10.0/24
-use gateway 192.168.1.1
-```
-
-### Important
-
-Only modify routing tables on systems/networks you own or are authorized to administer.
-
----
-
-# 19. Removing a Route
-
-Example:
-
-```bash
-sudo ip route del 10.10.10.0/24
-```
-
-Verify:
-
-```bash
-ip route
-```
-
----
-
-# 20. Routing Metrics
-
-Sometimes multiple routes can reach the same destination.
-
-A **metric** helps determine which route is preferred.
-
-Example:
-
-```text
-10.10.10.0/24 via 192.168.1.1 metric 100
-10.10.10.0/24 via 192.168.1.2 metric 200
-```
-
-Usually the lower metric is preferred when otherwise comparable.
-
-Think:
-
-```text
-Lower metric
-     ↓
-Usually preferred
-```
-
-But route selection also depends on prefix specificity and other routing rules.
-
----
-
-# 21. Routing vs Switching
-
-Very important distinction.
+These are different concepts.
 
 ## Switching
 
-Usually operates within the local network.
+Usually operates primarily at **Layer 2**.
+
+```text
+MAC Address
+```
+
+Example:
 
 ```text
 PC → Switch → PC
@@ -667,295 +468,187 @@ PC → Switch → PC
 
 ## Routing
 
-Connects different networks.
+Operates at **Layer 3**.
 
 ```text
-Network A
-   ↓
-Router
-   ↓
-Network B
+IP Address
 ```
-
-Simple memory:
-
-> **Switch = same/local network forwarding**
->
-> **Router = between networks**
-
----
-
-# 22. ARP and Routing
-
-For IPv4 local-network communication, the system needs the destination's MAC address.
 
 Example:
 
 ```text
+Network A → Router → Network B
+```
+
+### Easy Memory
+
+```text
+Switch → MAC
+Router → IP
+```
+
+---
+
+# 15. ARP and Routing
+
+For IPv4, when a host needs to send traffic to another device on the local network, it may use **ARP** to discover the destination's MAC address.
+
+Example:
+
+```text
+PC:
 192.168.1.10
-      ↓
-Need to communicate with
-      ↓
-192.168.1.20
+
+Target:
+192.168.1.50
 ```
 
-ARP can resolve:
+PC asks:
 
 ```text
-IP → MAC
+Who has 192.168.1.50?
 ```
 
-Check ARP/neighbour information:
+The target responds with its MAC address.
 
-```bash
-ip neigh
-```
-
-Example:
+Then:
 
 ```text
-192.168.1.1 dev eth0 lladdr xx:xx:xx:xx:xx:xx REACHABLE
+IP packet
+   ↓
+Ethernet frame
+   ↓
+Destination MAC
 ```
 
 ---
 
-# 23. Routing + ARP Together
+# 16. What Happens When Destination Is Outside Local Network?
 
 Suppose:
 
 ```text
-Your PC:
-192.168.1.10
-
-Destination:
-192.168.1.20
+PC = 192.168.1.10
+Gateway = 192.168.1.1
+Destination = 8.8.8.8
 ```
 
-Same subnet.
-
-Process:
+`8.8.8.8` is not on:
 
 ```text
-1. Check routing table
-        ↓
-2. Destination is local
-        ↓
-3. Find MAC using ARP
-        ↓
-4. Send Ethernet frame
+192.168.1.0/24
 ```
 
-For an Internet destination:
+So the PC sends the frame to the **gateway's MAC address**, while the IP packet's destination remains:
 
 ```text
-1. Check routing table
-        ↓
-2. Destination is remote
-        ↓
-3. Select default gateway
-        ↓
-4. Find gateway MAC
-        ↓
-5. Send frame to gateway
+8.8.8.8
 ```
+
+Conceptually:
+
+```text
+IP destination:
+8.8.8.8
+
+Ethernet destination:
+Router's MAC
+```
+
+This distinction is extremely important.
 
 ---
 
-# 24. Routing and VPNs
-
-VPNs commonly create a virtual interface.
+# 17. Routing Through Multiple Routers
 
 Example:
 
 ```text
-tun0
+PC
+ |
+ v
+Router A
+ |
+ v
+Router B
+ |
+ v
+Router C
+ |
+ v
+Server
 ```
 
-You might see:
+Each router makes a forwarding decision.
+
+Router A:
 
 ```text
-10.10.0.0/16 dev tun0
+Where should I send the packet next?
 ```
 
-This means traffic for:
+Router B asks the same question.
+
+Eventually:
 
 ```text
-10.10.x.x
+Server
 ```
 
-should go through:
+is reached.
+
+This is called **hop-by-hop forwarding**.
+
+---
+
+# 18. TTL and Routing
+
+IPv4 packets contain a field called:
 
 ```text
-tun0
+TTL = Time To Live
 ```
 
-This is extremely common in cybersecurity labs.
+It prevents packets from circulating forever.
+
+Each router normally decreases TTL by 1.
 
 Example:
 
 ```text
-Your machine
-     |
-     +--- eth0 → Internet
-     |
-     +--- tun0 → VPN lab
+TTL 64
+  ↓ Router
+TTL 63
+  ↓ Router
+TTL 62
+  ↓ Router
+...
 ```
+
+If TTL reaches zero, the packet is discarded.
+
+This is also why tools such as:
+
+```bash
+traceroute
+```
+
+can discover intermediate hops.
 
 ---
 
-# 25. Why VAPT Professionals Care About Routes
+# 19. Traceroute / Tracert
 
-During an assessment, you may encounter:
-
-```text
-eth0
-tun0
-docker0
-lo
-```
-
-Each may represent a different network.
-
-Understanding routes helps answer:
-
-* Which network am I connected to?
-* Where will this traffic go?
-* Is the target reachable?
-* Is the VPN route installed?
-* Which interface will be used?
-* Why is my connection failing?
-
----
-
-# 26. Routing and Network Segmentation
-
-Suppose an organization has:
-
-```text
-User Network
-192.168.10.0/24
-
-Server Network
-192.168.20.0/24
-
-Database Network
-192.168.30.0/24
-```
-
-A tester may discover:
-
-```text
-192.168.10.0/24 → reachable
-192.168.20.0/24 → reachable
-192.168.30.0/24 → blocked
-```
-
-This can indicate:
-
-* Firewall rules
-* Routing restrictions
-* Network segmentation
-* Access-control policies
-
-Routing information alone does **not** prove a firewall exists; it is one piece of the investigation.
-
----
-
-# 27. Routing in a VAPT Workflow
-
-A basic network assessment workflow might look like:
-
-```text
-Identify Interface
-       ↓
-Identify IP Address
-       ↓
-Check Routing Table
-       ↓
-Identify Reachable Networks
-       ↓
-Discover Authorized Hosts
-       ↓
-Enumerate Services
-       ↓
-Assess Security
-       ↓
-Document Findings
-```
-
-Useful commands:
+Linux:
 
 ```bash
-ip a
-ip route
-ip route get <destination>
-ip neigh
+traceroute 8.8.8.8
 ```
 
----
+Windows:
 
-# 28. Troubleshooting Example
-
-Suppose you cannot reach:
-
-```text
-10.10.10.20
-```
-
-Start with:
-
-```bash
-ip a
-```
-
-Check your IP.
-
-Then:
-
-```bash
-ip route
-```
-
-Ask:
-
-> Is there a route toward `10.10.10.0/24`?
-
-Then:
-
-```bash
-ip route get 10.10.10.20
-```
-
-Check which interface and gateway Linux selects.
-
-Then test connectivity in your authorized lab:
-
-```bash
-ping -c 4 10.10.10.20
-```
-
-If appropriate, investigate the path:
-
-```bash
-traceroute 10.10.10.20
-```
-
----
-
-# 29. Traceroute
-
-`traceroute` helps show the path packets take toward a destination.
-
-Example:
-
-```bash
-traceroute example.com
-```
-
-On some systems:
-
-```bash
-tracepath example.com
+```cmd
+tracert 8.8.8.8
 ```
 
 Conceptually:
@@ -972,49 +665,22 @@ Router 3
 Destination
 ```
 
-### Important
+### VAPT Relevance
 
-Traceroute results can be incomplete because routers or firewalls may filter or rate-limit the relevant packets.
+Traceroute can help understand:
 
----
+* Network topology
+* Routing paths
+* Network boundaries
+* Possible filtering
+* Segmentation
+* Reachability
 
-# 30. Routing in Windows
-
-Windows uses:
-
-```cmd
-route print
-```
-
-or PowerShell:
-
-```powershell
-Get-NetRoute
-```
-
-To inspect IP configuration:
-
-```cmd
-ipconfig
-```
-
-So:
-
-### Linux
-
-```bash
-ip route
-```
-
-### Windows
-
-```cmd
-route print
-```
+It should be used only against systems/networks you're authorized to assess.
 
 ---
 
-# 31. Static vs Dynamic Routing
+# 20. Static vs Dynamic Routing
 
 ## Static Routing
 
@@ -1023,7 +689,7 @@ Routes are manually configured.
 Example:
 
 ```text
-Network A → Router 1
+10.10.20.0/24 → 192.168.1.2
 ```
 
 Advantages:
@@ -1034,582 +700,1005 @@ Advantages:
 
 Disadvantages:
 
-* Difficult to manage at scale
-* Manual changes required
+* Manual maintenance
+* Doesn't automatically adapt to failures
 
 ---
 
-## Dynamic Routing
+# 21. Dynamic Routing
 
-Routers exchange routing information using routing protocols.
+Routers learn routes using routing protocols.
 
 Examples:
 
 * OSPF
 * BGP
 * EIGRP
+* IS-IS
 * RIP
 
-Dynamic routing is common in larger networks.
+Dynamic routing is useful for larger networks.
 
 ---
 
-# 32. Routing Protocols
+# 22. OSPF
 
-You should recognize these:
+**OSPF = Open Shortest Path First**
 
-| Protocol | Common use                                      |
-| -------- | ----------------------------------------------- |
-| OSPF     | Internal enterprise routing                     |
-| BGP      | Internet / inter-domain routing                 |
-| RIP      | Older/simple routing                            |
-| EIGRP    | Historically associated with Cisco environments |
+It is commonly used as an interior routing protocol.
 
-For a beginner VAPT learner, understand their **purpose** before trying to master their configuration.
+Basic idea:
+
+```text
+Router A ←→ Router B
+   ↑           ↑
+   └── Router C
+```
+
+Routers exchange topology information and calculate suitable paths.
+
+### VAPT Relevance
+
+Understanding routing protocols helps when assessing:
+
+* Network segmentation
+* Router configurations
+* Route exposure
+* Internal network architecture
 
 ---
 
-# 33. Routing Table vs ARP Table
+# 23. BGP
 
-Don't confuse them.
+**BGP = Border Gateway Protocol**
 
-### Routing table
+BGP is fundamental to routing between autonomous systems on the Internet.
 
-Answers:
+Simplified:
 
-> **Where should I send the packet?**
+```text
+AS 100
+   |
+   | BGP
+   |
+AS 200
+   |
+   | BGP
+   |
+AS 300
+```
 
-Command:
+BGP is much more advanced than the routing tables you normally inspect on a workstation.
+
+---
+
+# 24. Routing and VAPT
+
+Routing knowledge is extremely important in VAPT.
+
+A pentester needs to understand:
+
+```text
+Attacker
+   |
+   v
+Network Boundary
+   |
+   v
+Firewall
+   |
+   v
+Internal Network
+   |
+   +---- Web Server
+   |
+   +---- Database
+   |
+   +---- Admin Network
+```
+
+The routing architecture helps determine:
+
+* What is reachable?
+* What is isolated?
+* Which networks can communicate?
+* Where are gateways?
+* Where are segmentation boundaries?
+* Is an internal service unintentionally exposed?
+
+---
+
+# 25. Network Segmentation
+
+Good architecture:
+
+```text
+Internet
+   |
+ Firewall
+   |
+DMZ
+ |
+Web Server
+ |
+Firewall
+ |
+Internal Network
+ |
+Database
+```
+
+Poor segmentation might allow:
+
+```text
+Internet
+   |
+Web Server
+   |
+   +---- Database
+   |
+   +---- Admin Network
+```
+
+From a VAPT perspective, segmentation should be tested **within the authorized scope**.
+
+---
+
+# 26. Routing and Attack Surface
+
+Suppose an assessment discovers:
+
+```text
+10.10.10.0/24
+10.10.20.0/24
+10.10.30.0/24
+```
+
+The important question isn't simply:
+
+> "How many IPs exist?"
+
+Instead:
+
+> "Which networks are reachable from my current position?"
+
+Routing information helps answer that.
+
+---
+
+# 27. Routing Table + Nmap
+
+A common authorized lab workflow:
+
+```text
+1. Check local interface
+        ↓
+2. Check routing table
+        ↓
+3. Identify authorized target network
+        ↓
+4. Discover hosts
+        ↓
+5. Enumerate services
+        ↓
+6. Assess vulnerabilities
+        ↓
+7. Document findings
+```
+
+Example:
 
 ```bash
+ip addr
 ip route
 ```
 
-### ARP/Neighbour table
-
-Answers:
-
-> **What MAC address corresponds to this local IP?**
-
-Command:
+Then, only for an authorized lab:
 
 ```bash
-ip neigh
-```
-
-Memory:
-
-```text
-Routing:
-IP → Next path
-
-ARP:
-IP → MAC
+nmap <authorized-target>
 ```
 
 ---
 
-# 34. Routing Table vs DNS
+# 28. Multiple Interfaces
 
-Also don't confuse these.
-
-### DNS
-
-Converts:
+A machine may have multiple network interfaces:
 
 ```text
-example.com
-     ↓
-IP address
+eth0 → 192.168.1.20
+tun0 → 10.10.10.5
 ```
+
+This is common with:
+
+* VPNs
+* Virtual machines
+* Containers
+* Cloud environments
+
+Routing determines which interface should be used for a destination.
+
+---
+
+# 29. VPN and Routing
+
+A VPN often creates a virtual interface.
+
+Example:
+
+```text
+tun0
+10.10.10.5
+```
+
+Routing may contain:
+
+```text
+10.10.0.0/16 → tun0
+```
+
+Therefore traffic destined for:
+
+```text
+10.10.x.x
+```
+
+may travel through the VPN.
+
+Conceptually:
+
+```text
+Your PC
+  |
+  +---- Normal Internet → eth0
+  |
+  +---- Private VPN Network → tun0
+```
+
+---
+
+# 30. Virtual Machines and Routing
+
+Kali inside VirtualBox/VMware may use:
+
+### NAT
+
+```text
+Kali
+ |
+ v
+Virtual NAT
+ |
+ v
+Host
+ |
+ v
+Internet
+```
+
+### Bridged
+
+```text
+Kali
+ |
+ v
+Physical LAN
+ |
+ v
+Router
+```
+
+### Host-only
+
+```text
+Kali ←→ Host
+```
+
+The networking mode changes what the VM can reach.
+
+---
+
+# 31. Common Routing Problems
+
+## Problem 1: No Default Route
+
+```text
+ip route
+```
+
+doesn't show:
+
+```text
+default via ...
+```
+
+Internet connectivity may fail.
+
+---
+
+## Problem 2: Wrong Gateway
+
+Example:
+
+```text
+PC = 192.168.1.20
+Gateway = 192.168.2.1
+```
+
+Depending on the network configuration, this may be invalid/unreachable.
+
+---
+
+## Problem 3: Wrong Subnet Mask
+
+Example:
+
+```text
+IP: 192.168.1.20/24
+```
+
+vs incorrectly configured:
+
+```text
+192.168.1.20/16
+```
+
+This can change which destinations the host considers directly connected.
+
+---
+
+## Problem 4: Conflicting Routes
+
+Multiple routes may match the same destination.
+
+You need to understand:
+
+```text
+Prefix specificity
++
+Route preference/metric
+```
+
+---
+
+# 32. Routing vs NAT
+
+Don't confuse these.
 
 ### Routing
 
 Determines:
 
 ```text
-IP address
-     ↓
 Where should the packet go?
 ```
 
-Complete flow:
+### NAT
+
+Changes address information, typically IP addresses and sometimes ports.
+
+Example:
 
 ```text
-example.com
-     ↓
-DNS
-     ↓
-IP address
-     ↓
-Routing table
-     ↓
-Gateway/interface
-     ↓
-Network
+Private:
+192.168.1.20
+
+NAT Router
+
+Public:
+203.0.113.x
 ```
 
----
-
-# 35. Important VAPT Concepts Connected to Routing
-
-Learn these after mastering basic routes:
-
-### 1. Network segmentation
-
-Separating networks to limit access.
-
-### 2. VPN routing
-
-Routes traffic through encrypted tunnels.
-
-### 3. Pivoting
-
-Using an authorized intermediate system to reach another network.
-
-### 4. Multi-homing
-
-A system has multiple network interfaces.
-
-### 5. Routing misconfiguration
-
-Incorrect routes can expose or isolate networks unexpectedly.
-
-### 6. Asymmetric routing
-
-Traffic travels through different paths in different directions.
+Routing and NAT often work together, but they are different functions.
 
 ---
 
-# 36. Mini Practical Lab
+# 33. Important Route Types
 
-Use your own Kali VM or an authorized lab.
+You may encounter:
 
-## Step 1 — Find your IP
+```text
+Connected route
+Static route
+Default route
+Dynamic route
+Host route
+Network route
+```
+
+A host route is commonly represented using:
+
+```text
+/32
+```
+
+Example:
+
+```text
+192.168.1.50/32
+```
+
+This identifies exactly one IPv4 address.
+
+---
+
+# 34. IPv6 Default Route
+
+IPv6 uses:
+
+```text
+::/0
+```
+
+instead of:
+
+```text
+0.0.0.0/0
+```
+
+Example:
+
+```text
+default via fe80::1 dev eth0
+```
+
+IPv6 routing also has important concepts such as:
+
+* Neighbor Discovery
+* Router Advertisements
+* Link-local addresses
+* SLAAC
+
+---
+
+# 35. Routing Mental Model
+
+Whenever you see an IP destination, ask:
+
+```text
+1. Is it local?
+        |
+        +-- YES → Direct delivery
+        |
+        +-- NO
+             ↓
+       Check routing table
+             ↓
+       Find matching routes
+             ↓
+       Longest-prefix match
+             ↓
+       Determine next hop
+             ↓
+       Select interface
+             ↓
+       Forward packet
+```
+
+This is the **core mental model**.
+
+---
+
+# 36. Practical Lab — Routing Table
+
+Use your own Kali VM or authorized lab.
+
+### Step 1 — Find your IP
 
 ```bash
-ip a
+ip addr
 ```
 
-Record:
-
-```text
-IP:
-Subnet:
-Interface:
-```
-
----
-
-## Step 2 — Check routes
+### Step 2 — Find your routes
 
 ```bash
 ip route
 ```
 
-Identify:
+### Step 3 — Check default gateway
+
+Look for:
 
 ```text
-Default gateway:
-Default interface:
-Local network:
+default via X.X.X.X
 ```
 
----
-
-## Step 3 — Check a destination route
+### Step 4 — Ask Linux how it would route traffic
 
 ```bash
 ip route get 8.8.8.8
 ```
 
-Record:
-
-```text
-Gateway:
-Interface:
-Source IP:
-```
-
----
-
-## Step 4 — Check neighbours
-
-```bash
-ip neigh
-```
-
-Look for your gateway.
-
----
-
-## Step 5 — Trace a route
-
-On your authorized network:
+### Step 5 — Trace the path
 
 ```bash
 traceroute 8.8.8.8
 ```
 
-or:
+If `traceroute` isn't installed, use the appropriate package available in your environment.
 
-```bash
-tracepath 8.8.8.8
+---
+
+# 37. Practical Lab Questions
+
+After running the commands, answer:
+
+### Q1
+
+What is your IP address?
+
+### Q2
+
+What is your subnet/prefix?
+
+### Q3
+
+What is your default gateway?
+
+### Q4
+
+Which interface provides Internet connectivity?
+
+### Q5
+
+What route is selected for `8.8.8.8`?
+
+### Q6
+
+Does your machine have more than one interface?
+
+### Q7
+
+Do you have any VPN routes?
+
+---
+
+# 38. Scenario-Based Questions
+
+### Scenario 1
+
+Your machine has:
+
+```text
+192.168.1.10/24
+Gateway: 192.168.1.1
+```
+
+Destination:
+
+```text
+192.168.1.50
+```
+
+Does the packet need the default gateway?
+
+**Answer:** Normally no. The destination is within the directly connected `192.168.1.0/24` network.
+
+---
+
+### Scenario 2
+
+Destination:
+
+```text
+8.8.8.8
+```
+
+Does the local `/24` route match?
+
+**Answer:** No.
+
+The default route is normally used.
+
+---
+
+### Scenario 3
+
+Routing table:
+
+```text
+10.0.0.0/8
+10.10.0.0/16
+10.10.20.0/24
+```
+
+Destination:
+
+```text
+10.10.20.55
+```
+
+Which route wins?
+
+**Answer:**
+
+```text
+10.10.20.0/24
+```
+
+because it is the longest/more-specific matching prefix.
+
+---
+
+# 39. Interview Questions
+
+### Beginner
+
+**Q1. What is routing?**
+
+Routing is the process of determining how packets reach their destination.
+
+**Q2. What is a routing table?**
+
+A collection of routes used to make packet-forwarding decisions.
+
+**Q3. What is a default gateway?**
+
+The next-hop router normally used when no more specific route matches.
+
+**Q4. What is a default IPv4 route?**
+
+```text
+0.0.0.0/0
+```
+
+**Q5. What is an IPv6 default route?**
+
+```text
+::/0
 ```
 
 ---
 
-# 37. VAPT Practical Exercise
+### Intermediate
 
-Create a small network:
+**Q6. What is longest-prefix matching?**
 
-```text
-Kali VM
-192.168.56.10
-      |
-      |
-Virtual Network
-      |
-      |
-Target VM
-192.168.56.20
-```
+Selecting the most specific matching route for a destination.
 
-On Kali:
+**Q7. Difference between routing and switching?**
+
+Routing forwards between IP networks; switching primarily forwards frames within a Layer-2 network.
+
+**Q8. Why is TTL important?**
+
+It prevents packets from circulating indefinitely.
+
+**Q9. What command displays routes in Linux?**
 
 ```bash
-ip a
 ip route
-ip neigh
 ```
 
-Then determine:
+**Q10. What command displays routes in Windows?**
 
-```text
-1. Kali IP
-2. Network/subnet
-3. Interface
-4. Route to target
-5. Target MAC address
+```cmd
+route print
 ```
-
-This teaches you to **read the network before scanning it**.
 
 ---
 
-# 38. Advanced Concept: Multiple Interfaces
+# 40. Advanced Interview Questions
 
-Imagine:
+### Q1. Why can multiple routes match one destination?
 
-```text
-eth0 → 192.168.1.10
-tun0 → 10.10.10.5
-```
-
-Routing decides:
-
-```text
-192.168.1.x → eth0
-
-10.10.0.0/16 → tun0
-
-Internet → eth0
-```
-
-This is why a tool may work through one interface but fail through another.
-
----
-
-# 39. Advanced Concept: Source Address Selection
-
-When a system has multiple interfaces, it may need to choose a source IP.
+Because routing tables can contain networks of different prefix lengths.
 
 Example:
 
 ```text
-eth0 = 192.168.1.10
-tun0 = 10.10.10.5
+10.0.0.0/8
+10.10.0.0/16
+10.10.20.0/24
 ```
 
-A route can influence which source address is appropriate.
+### Q2. What determines the selected route?
 
-Check with:
-
-```bash
-ip route get <destination>
-```
-
-Look for:
+In simplified terms:
 
 ```text
-src <IP>
+Longest prefix match
+→ then applicable route preference/metric rules
 ```
 
-This is very useful for debugging VPN and multi-interface environments.
+The exact selection process varies by operating system and routing implementation.
+
+### Q3. Why can a host have multiple interfaces?
+
+Examples:
+
+* Ethernet
+* Wi-Fi
+* VPN
+* Virtual machines
+* Containers
+
+The routing table determines which path/interface is appropriate.
+
+### Q4. How does routing help VAPT?
+
+It helps a tester understand:
+
+```text
+Reachability
+Segmentation
+Network boundaries
+Attack surface
+VPN paths
+Internal architecture
+```
 
 ---
 
-# 40. Common Mistakes
+# 41. MCQs
+
+### 1. What is the purpose of a routing table?
+
+A. Store passwords
+B. Decide packet forwarding paths
+C. Store DNS records
+D. Encrypt traffic
+
+**Answer: B**
+
+---
+
+### 2. What is the IPv4 default route?
+
+A. `127.0.0.1`
+B. `255.255.255.255`
+C. `0.0.0.0/0`
+D. `192.168.1.1/24`
+
+**Answer: C**
+
+---
+
+### 3. Which command displays routes on Linux?
+
+A. `ip route`
+B. `show ip`
+C. `route-ip`
+D. `net route`
+
+**Answer: A**
+
+---
+
+### 4. Which command displays the Windows routing table?
+
+A. `ip route`
+B. `route print`
+C. `show route`
+D. `routing`
+
+**Answer: B**
+
+---
+
+### 5. Which route is more specific?
+
+A. `/8`
+B. `/16`
+C. `/24`
+D. `/0`
+
+**Answer: C**
+
+---
+
+### 6. What does `::/0` represent?
+
+A. IPv4 localhost
+B. IPv6 default route
+C. IPv6 loopback only
+D. IPv4 broadcast
+
+**Answer: B**
+
+---
+
+### 7. Which device primarily performs Layer-3 routing?
+
+A. Hub
+B. Switch
+C. Router
+D. Repeater
+
+**Answer: C**
+
+---
+
+### 8. What does TTL help prevent?
+
+A. DNS failures
+B. Infinite packet loops
+C. Password attacks
+D. Port scanning
+
+**Answer: B**
+
+---
+
+### 9. What does `ip route get 8.8.8.8` help determine?
+
+A. Password
+B. Selected route/path decision
+C. DNS password
+D. MAC vendor
+
+**Answer: B**
+
+---
+
+### 10. Which protocol is associated with routing between autonomous systems?
+
+A. HTTP
+B. FTP
+C. BGP
+D. ARP
+
+**Answer: C**
+
+---
+
+# 42. Common Beginner Mistakes
 
 ### ❌ Mistake 1
 
-Thinking:
+Thinking the default gateway is used for **every** packet.
 
-```text
-Gateway = DNS server
-```
+### ✅ Correct
 
-Not necessarily.
-
-Gateway and DNS server perform different functions.
+Directly connected destinations normally don't need the default gateway.
 
 ---
 
 ### ❌ Mistake 2
 
-Thinking every destination goes through the gateway.
+Thinking routing and NAT are the same.
 
-Not necessarily.
+### ✅ Correct
 
-Local destinations may be directly reachable.
+Routing decides forwarding; NAT translates addresses/ports.
 
 ---
 
 ### ❌ Mistake 3
 
-Thinking routing determines whether a port is open.
+Thinking routers forward based on MAC addresses between networks.
 
-No.
+### ✅ Correct
 
-Routing determines the path.
-
-Port/service state is a separate issue.
+Routers make Layer-3 forwarding decisions using IP information.
 
 ---
 
 ### ❌ Mistake 4
 
-Confusing:
+Memorizing routes without understanding prefixes.
+
+### ✅ Correct
+
+Understand:
 
 ```text
-Routing table
-```
-
-with:
-
-```text
-ARP table
-```
-
----
-
-### ❌ Mistake 5
-
-Assuming traceroute always shows every router.
-
-It may not.
-
----
-
-# 41. Interview Questions
-
-## Q1. What is routing?
-
-Routing is the process of determining the path used to deliver packets between networks.
-
----
-
-## Q2. What is a routing table?
-
-A routing table contains rules that tell a system where to forward traffic for different destinations.
-
----
-
-## Q3. What is a default route?
-
-A route used when no more specific matching route exists.
-
-Usually represented as:
-
-```text
-0.0.0.0/0
-```
-
-for IPv4.
-
----
-
-## Q4. What is a gateway?
-
-A next-hop device used to reach another network.
-
----
-
-## Q5. What command displays routes in Linux?
-
-```bash
-ip route
+IP + Prefix
+      ↓
+Network
+      ↓
+Route matching
 ```
 
 ---
 
-## Q6. What does `ip route get` do?
-
-It shows the route Linux would use to reach a particular destination.
-
----
-
-## Q7. What is longest-prefix match?
-
-The most specific matching route is generally selected.
-
----
-
-## Q8. Difference between routing and switching?
-
-Switching primarily forwards traffic within a local network, while routing forwards traffic between networks.
-
----
-
-## Q9. What is a routing metric?
-
-A value used to help select between comparable routes.
-
----
-
-## Q10. What is a VPN route?
-
-A route that directs traffic through a VPN/tunnel interface.
-
----
-
-# 42. Quick Command Cheat Sheet
-
-| Purpose                    | Command                 |
-| -------------------------- | ----------------------- |
-| Show IP addresses          | `ip a`                  |
-| Show IPv4 routes           | `ip -4 route`           |
-| Show IPv6 routes           | `ip -6 route`           |
-| Show routing table         | `ip route`              |
-| Check route to destination | `ip route get <IP>`     |
-| Show neighbour table       | `ip neigh`              |
-| Trace path                 | `traceroute <IP>`       |
-| Alternative trace          | `tracepath <IP>`        |
-| Add route                  | `sudo ip route add ...` |
-| Delete route               | `sudo ip route del ...` |
-
----
-
-# 43. Must-Remember Concepts
+# 43. Must-Memorize Cheat Sheet
 
 ```text
 Routing
-   ↓
-Chooses path
+    ↓
+Decides where packets go
 
 Routing Table
-   ↓
-Contains routes
+    ↓
+Collection of forwarding rules
 
-Gateway
-   ↓
-Next-hop device
-
-Default Route
-   ↓
+Default IPv4 Route
+    ↓
 0.0.0.0/0
 
-Interface
-   ↓
-Where traffic leaves/enters
+Default IPv6 Route
+    ↓
+::/0
 
-Longest Prefix Match
-   ↓
-Most specific route wins
+Linux
+    ↓
+ip route
 
+Windows
+    ↓
+route print
+
+Most specific route
+    ↓
+Longest prefix match
+
+Switch
+    ↓
+Primarily Layer 2 / MAC
+
+Router
+    ↓
+Layer 3 / IP
+
+IPv4 local resolution
+    ↓
 ARP
-   ↓
-IPv4 → MAC on local network
 
-VPN
-   ↓
-Often creates a virtual interface + routes
+IPv4 TTL
+    ↓
+Decreases across routed hops
 ```
 
 ---
 
-# 44. Final Mental Model
+# 44. Key Takeaways
 
-When you send:
+* Routing determines how packets reach destinations.
+* A routing table contains forwarding rules.
+* The default route is the fallback route.
+* IPv4 default route = `0.0.0.0/0`.
+* IPv6 default route = `::/0`.
+* More-specific routes generally win through longest-prefix matching.
+* Linux uses `ip route` to inspect routes.
+* Windows uses `route print`.
+* Routers connect different IP networks.
+* Routing is different from NAT.
+* TTL helps prevent endless packet loops.
+* VPNs and virtual machines often add interfaces and routes.
+* Routing knowledge is essential for understanding network reachability and segmentation during authorized VAPT.
 
-```text
-ping 8.8.8.8
-```
+---
+
+# 45. Final Mental Model
+
+Don't memorize routing as a collection of commands.
 
 Think:
 
 ```text
-Application
-    ↓
-Destination IP = 8.8.8.8
-    ↓
-Routing table checked
-    ↓
-No specific route?
-    ↓
-Default route
-    ↓
-Gateway
-    ↓
-Network interface
-    ↓
-Local network
-    ↓
-Router(s)
-    ↓
-Internet
-    ↓
-8.8.8.8
+             DESTINATION
+                  |
+                  v
+        ┌──────────────────┐
+        │ Routing Table    │
+        └────────┬─────────┘
+                 |
+                 v
+       Which routes match?
+                 |
+                 v
+       Longest prefix match
+                 |
+                 v
+           Next Hop
+                 |
+                 v
+          Network Interface
+                 |
+                 v
+              PACKET
+                 |
+                 v
+           Next Router
+                 |
+                 v
+           DESTINATION
 ```
 
-This is the mental model you should carry into:
+### The one question to remember:
 
-* Nmap
-* Wireshark
-* VPN labs
-* Network VAPT
-* Pivoting
-* Firewall testing
-* Troubleshooting
-* Red-team labs
+> **"For this destination IP, which route will my machine choose, through which next hop, and through which interface?"**
 
----
-
-# 45. Mastery Checklist
-
-Before moving to the next topic, you should be able to explain without notes:
-
-* [ ] What routing means
-* [ ] What a routing table is
-* [ ] What a gateway does
-* [ ] What `0.0.0.0/0` means
-* [ ] What an interface is
-* [ ] Local vs remote destination
-* [ ] Longest-prefix matching
-* [ ] Routing metrics
-* [ ] Routing vs switching
-* [ ] Routing vs DNS
-* [ ] Routing vs ARP
-* [ ] VPN routing
-* [ ] Multi-interface routing
-* [ ] `ip route`
-* [ ] `ip route get`
-* [ ] `ip neigh`
-* [ ] `traceroute`
-* [ ] Basic static routes
-
----
-
-# One-Line Revision
-
-> **Routing answers one critical question: "For this destination IP, which route, gateway, and interface should I use to send the packet?"**
+If you can answer that confidently using `ip route`, prefixes, gateways, and interfaces, you have the foundation needed for **intermediate networking + VAPT enumeration**.
